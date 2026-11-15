@@ -1,0 +1,22 @@
+# Dependencies
+**/node_modules/
+
+# Build and test artifacts
+**/dist/
+**/.angular/
+**/coverage/
+**/out-tsc/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db

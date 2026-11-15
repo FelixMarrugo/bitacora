@@ -1,0 +1,25 @@
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+ion-card {
+  width: min(100%, 420px);
+}
+
+ion-card-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.error-message {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+}
+
+.login-button {
+  margin-top: 18px;
+}

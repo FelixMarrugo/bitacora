@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Editar entrada</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="loading-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando entrada...</p>
+  </div>
+
+  <ion-card *ngIf="!isLoading && notFound">
+    <ion-card-content>
+      <p class="status-message">No se encontró la entrada solicitada.</p>
+      <ion-button expand="block" (click)="cancel()">Volver al dashboard</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="!isLoading && !notFound">
+    <ion-card-header>
+      <ion-card-title>Editar entrada #{{ entry.ordenCompra }}</ion-card-title>
+      <ion-card-subtitle>Actualiza la información de la mercancía recibida.</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Fecha" labelPlacement="stacked" type="date" [(ngModel)]="entry.fecha"></ion-input>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Proveedor" labelPlacement="stacked" type="text" [(ngModel)]="entry.proveedor"></ion-input>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Producto recibido" labelPlacement="stacked" type="text" [(ngModel)]="entry.producto"></ion-input>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Cantidad" labelPlacement="stacked" type="number" min="1" [(ngModel)]="entry.cantidad"></ion-input>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Hora" labelPlacement="stacked" type="time" [(ngModel)]="entry.hora"></ion-input>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Orden de compra" labelPlacement="stacked" type="text" [(ngModel)]="entry.ordenCompra"></ion-input>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item lines="none">
+              <ion-label>Ingresado al ERP</ion-label>
+              <ion-toggle [(ngModel)]="entry.yaIngresadoErp"></ion-toggle>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-button expand="block" fill="outline" (click)="verifyOrder()">Verificar orden</ion-button>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="12">
+            <ion-textarea label="Observaciones" labelPlacement="stacked" rows="4" [(ngModel)]="entry.observaciones"></ion-textarea>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <p class="status-message" *ngIf="statusMessage">{{ statusMessage }}</p>
+
+      <div class="form-actions">
+        <ion-button color="primary" (click)="save()" [disabled]="isSaving">
+          {{ isSaving ? 'Guardando...' : 'Guardar cambios' }}
+        </ion-button>
+        <ion-button fill="clear" color="medium" (click)="cancel()" [disabled]="isSaving">Cancelar</ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

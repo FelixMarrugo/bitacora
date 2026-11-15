@@ -1,0 +1,43 @@
+<ion-content class="ion-padding">
+  <div class="auth-shell">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Bitácora de control</ion-card-title>
+        <ion-card-subtitle>Ingreso de mercancía y seguimiento ERP</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-input
+              label="Usuario"
+              labelPlacement="stacked"
+              [(ngModel)]="username"
+              type="text"
+              placeholder="Ingrese usuario"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-input
+              label="Contraseña"
+              labelPlacement="stacked"
+              [(ngModel)]="password"
+              type="password"
+              placeholder="Ingrese contraseña"
+            ></ion-input>
+          </ion-item>
+        </ion-list>
+
+        <ion-text color="danger" *ngIf="errorMessage">
+          <p class="error-message">{{ errorMessage }}</p>
+        </ion-text>
+
+        <ion-button expand="block" class="login-button" (click)="login()" [disabled]="isLoading">
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">Ingresar</span>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

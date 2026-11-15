@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Bitácora de ingreso</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input label="Fecha" labelPlacement="stacked" type="date" [(ngModel)]="entry.fecha"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Proveedor" labelPlacement="stacked" type="text" [(ngModel)]="entry.proveedor" placeholder="Nombre del proveedor"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Producto recibido" labelPlacement="stacked" type="text" [(ngModel)]="entry.producto" placeholder="Nombre del producto"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Cantidad" labelPlacement="stacked" type="number" [(ngModel)]="entry.cantidad" min="0"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Hora" labelPlacement="stacked" type="time" [(ngModel)]="entry.hora"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Orden de compra" labelPlacement="stacked" type="text" [(ngModel)]="entry.ordenCompra" (ionBlur)="verifyOrder()"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox slot="start" [(ngModel)]="entry.yaIngresadoErp"></ion-checkbox>
+          <ion-label>Ya ingresado al ERP</ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-textarea label="Observaciones" labelPlacement="stacked" [(ngModel)]="entry.observaciones" rows="3" placeholder="Comentarios adicionales"></ion-textarea>
+        </ion-item>
+      </ion-list>
+
+      <p class="status-message" *ngIf="statusMessage">{{ statusMessage }}</p>
+
+      <ion-button expand="block" class="submit-button" (click)="submit()" [disabled]="isSubmitting">
+        <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
+        <span *ngIf="!isSubmitting">Guardar ingreso</span>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

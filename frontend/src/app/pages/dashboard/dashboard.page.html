@@ -1,0 +1,114 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">Salir</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="summary-grid">
+    <ion-card>
+      <ion-card-content>
+        <p class="label">Entradas del mes</p>
+        <h2>{{ summary.entradas }}</h2>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-content>
+        <p class="label">Proveedor activo</p>
+        <h2>{{ summary.proveedor }}</h2>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-content>
+        <p class="label">Pendientes</p>
+        <h2>{{ summary.pendientes }}</h2>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-content>
+        <p class="label">Ingresados al ERP</p>
+        <h2>{{ summary.enErp }}</h2>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Filtrar entradas por fecha</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Desde" labelPlacement="stacked" type="date" [(ngModel)]="dateFrom"></ion-input>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-input label="Hasta" labelPlacement="stacked" type="date" [(ngModel)]="dateTo"></ion-input>
+          </ion-col>
+          <ion-col size="12" size-md="2">
+            <ion-button expand="block" (click)="applyFilter()">Filtrar</ion-button>
+          </ion-col>
+          <ion-col size="12" size-md="2">
+            <ion-button expand="block" fill="outline" (click)="resetFilter()">Mes actual</ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="toolbar-actions">
+    <ion-button color="success" (click)="openCreateForm()">Nueva orden</ion-button>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Entradas del mes</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Hora</th>
+              <th>Orden</th>
+              <th>ERP</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredEntries.length === 0">
+              <td colspan="8" class="empty-state">No hay entradas para ese rango de fechas.</td>
+            </tr>
+            <tr *ngFor="let entry of filteredEntries">
+              <td>{{ entry.fecha }}</td>
+              <td>{{ entry.proveedor }}</td>
+              <td>{{ entry.producto || 'Sin especificar' }}</td>
+              <td>{{ entry.cantidad }}</td>
+              <td>{{ entry.hora }}</td>
+              <td>{{ entry.ordenCompra || 'N/A' }}</td>
+              <td>
+                <ion-badge [color]="entry.yaIngresadoErp ? 'success' : 'warning'">
+                  {{ entry.yaIngresadoErp ? 'Ingresado' : 'No ingresado' }}
+                </ion-badge>
+              </td>
+              <td class="table-actions">
+                <ion-button size="small" fill="clear" color="primary" (click)="openEditForm(entry)">Editar</ion-button>
+                <ion-button size="small" fill="clear" color="danger" (click)="deleteEntry(entry.id!)">Eliminar</ion-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
