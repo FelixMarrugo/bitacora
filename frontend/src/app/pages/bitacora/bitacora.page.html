@@ -1,56 +1,185 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Bitácora de ingreso</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <main class="mx-auto grid w-full max-w-5xl gap-6 p-4 sm:p-6 lg:p-8">
+    <header class="grid gap-2">
+      <p class="text-sm font-semibold text-sky-700">Recepción de mercancía</p>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Nueva entrada</h1>
+      <p class="text-sm text-slate-500">Registra la información de la mercancía recibida.</p>
+    </header>
 
-<ion-content class="ion-padding">
-  <ion-card>
-    <ion-card-content>
-      <ion-list lines="full">
-        <ion-item>
-          <ion-input label="Fecha" labelPlacement="stacked" type="date" [(ngModel)]="entry.fecha"></ion-input>
-        </ion-item>
+    <form class="grid gap-6" (ngSubmit)="submit()" novalidate>
+      <section class="grid gap-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-6">
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700">
+          Fecha
+          <input
+            class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            type="date"
+            [(ngModel)]="entry.fecha"
+            name="fecha"
+          >
+        </label>
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700">
+          Hora
+          <input
+            class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            type="time"
+            [(ngModel)]="entry.hora"
+            name="hora"
+          >
+        </label>
+        <section class="grid gap-3 sm:col-span-2" aria-label="Proveedor">
+          <div class="grid gap-1.5 text-sm font-medium text-slate-700">
+            <label for="supplier-search">Buscar proveedor por razón social</label>
+            <input
+              id="supplier-search"
+              class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-normal text-slate-900 placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="search"
+              [(ngModel)]="supplierSearch"
+              name="supplierSearch"
+              placeholder="Buscar por razón social"
+              [disabled]="isLoadingCatalogs || suppliers.length === 0"
+              (ngModelChange)="onSupplierSearch()"
+            >
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="grid content-start gap-1.5 text-sm font-medium text-slate-700" for="entry-supplier-nit">
+              NIT
+              <input
+                id="entry-supplier-nit"
+                class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-600"
+                type="text"
+                [value]="entry.proveedorNit || ''"
+                placeholder="Se completa al seleccionar el proveedor"
+                readonly
+              >
+            </label>
+            <div class="grid content-start gap-1.5 text-sm font-medium text-slate-700">
+              <label for="entry-supplier-name">Proveedor / razón social</label>
+              <select
+                id="entry-supplier-name"
+                class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                [(ngModel)]="entry.proveedor"
+                name="proveedor"
+                required
+                [disabled]="isLoadingCatalogs || suppliers.length === 0"
+                (ngModelChange)="selectSupplier($event)"
+              >
+                <option value="">Seleccione un proveedor</option>
+                <option *ngFor="let supplier of filteredSuppliers" [value]="supplier.razonSocial">
+                  {{ supplier.nit }} — {{ supplier.razonSocial }}
+                </option>
+              </select>
+              <span *ngIf="!isLoadingCatalogs && suppliers.length === 0" class="text-xs font-normal text-amber-700">
+                No hay proveedores activos. <a class="font-semibold underline" routerLink="/catalogos">Administra el catálogo</a>.
+              </span>
+              <span *ngIf="supplierSearch && filteredSuppliers.length === 0" class="text-xs font-normal text-amber-700">
+                No hay proveedores que coincidan con la búsqueda.
+              </span>
+            </div>
+          </div>
+        </section>
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700">
+          Orden de compra
+          <input
+            class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            type="text"
+            [(ngModel)]="entry.ordenCompra"
+            name="ordenCompra"
+            placeholder="Número de orden"
+            (blur)="verifyOrder()"
+          >
+        </label>
 
-        <ion-item>
-          <ion-input label="Proveedor" labelPlacement="stacked" type="text" [(ngModel)]="entry.proveedor" placeholder="Nombre del proveedor"></ion-input>
-        </ion-item>
+        <section class="grid gap-4 sm:col-span-2" aria-label="Productos recibidos">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">Productos recibidos</h2>
+              <p class="mt-1 text-sm text-slate-500">Agrega cada producto y su cantidad.</p>
+            </div>
+            <button
+              class="rounded-lg border border-sky-700 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 disabled:opacity-50"
+              type="button"
+              (click)="addProductLine()"
+              [disabled]="isLoadingCatalogs || products.length === 0"
+            >
+              Agregar producto
+            </button>
+          </div>
 
-        <ion-item>
-          <ion-input label="Producto recibido" labelPlacement="stacked" type="text" [(ngModel)]="entry.producto" placeholder="Nombre del producto"></ion-input>
-        </ion-item>
+          <div *ngIf="products.length === 0 && !isLoadingCatalogs" class="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
+            No hay productos activos. <a class="font-semibold underline" routerLink="/catalogos">Administra el catálogo</a> para continuar.
+          </div>
 
-        <ion-item>
-          <ion-input label="Cantidad" labelPlacement="stacked" type="number" [(ngModel)]="entry.cantidad" min="0"></ion-input>
-        </ion-item>
+          <div *ngFor="let line of entry.productos; let i = index" class="grid grid-cols-2 items-end gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]">
+            <label class="col-span-2 grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 sm:col-span-1">
+              Producto
+              <select
+                class="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                [(ngModel)]="line.producto"
+                [name]="'producto-' + i"
+                required
+              >
+                <option value="">Seleccione un producto</option>
+                <option *ngFor="let product of products" [value]="product.nombre" [disabled]="isProductSelected(product.nombre, i)">
+                  {{ product.nombre }}
+                </option>
+              </select>
+            </label>
+            <label class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700">
+              Cantidad
+              <input
+                class="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                type="number"
+                [(ngModel)]="line.cantidad"
+                [name]="'cantidad-' + i"
+                min="1"
+                step="1"
+                required
+              >
+            </label>
+            <button
+              class="min-w-20 justify-self-end whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:justify-self-start"
+              type="button"
+              (click)="removeProductLine(i)"
+              [attr.aria-label]="'Quitar producto ' + (i + 1)"
+            >
+              Quitar
+            </button>
+          </div>
+        </section>
 
-        <ion-item>
-          <ion-input label="Hora" labelPlacement="stacked" type="time" [(ngModel)]="entry.hora"></ion-input>
-        </ion-item>
+        <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 sm:col-span-2">
+          <input
+            class="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-600"
+            type="checkbox"
+            [(ngModel)]="entry.yaIngresadoErp"
+            name="yaIngresadoErp"
+          >
+          Ya ingresado al ERP
+        </label>
 
-        <ion-item>
-          <ion-input label="Orden de compra" labelPlacement="stacked" type="text" [(ngModel)]="entry.ordenCompra" (ionBlur)="verifyOrder()"></ion-input>
-        </ion-item>
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
+          Observaciones
+          <textarea
+            class="min-h-28 resize-y rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            [(ngModel)]="entry.observaciones"
+            name="observaciones"
+            rows="4"
+            placeholder="Comentarios adicionales"
+          ></textarea>
+        </label>
 
-        <ion-item>
-          <ion-checkbox slot="start" [(ngModel)]="entry.yaIngresadoErp"></ion-checkbox>
-          <ion-label>Ya ingresado al ERP</ion-label>
-        </ion-item>
-
-        <ion-item>
-          <ion-textarea label="Observaciones" labelPlacement="stacked" [(ngModel)]="entry.observaciones" rows="3" placeholder="Comentarios adicionales"></ion-textarea>
-        </ion-item>
-      </ion-list>
-
-      <p class="status-message" *ngIf="statusMessage">{{ statusMessage }}</p>
-
-      <ion-button expand="block" class="submit-button" (click)="submit()" [disabled]="isSubmitting">
-        <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
-        <span *ngIf="!isSubmitting">Guardar ingreso</span>
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
+        <p *ngIf="statusMessage" class="text-sm text-sky-700 sm:col-span-2" role="status">{{ statusMessage }}</p>
+        <div class="flex justify-end sm:col-span-2">
+          <button
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-sky-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-60"
+            type="submit"
+            [disabled]="isSubmitting"
+          >
+            <ion-spinner *ngIf="isSubmitting" name="crescent" class="h-4 w-4"></ion-spinner>
+            {{ isSubmitting ? 'Guardando...' : 'Guardar ingreso' }}
+          </button>
+        </div>
+      </section>
+    </form>
+  </main>
 </ion-content>

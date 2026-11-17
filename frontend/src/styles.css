@@ -1,0 +1,39 @@
+@import "@ionic/angular/css/core.css";
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "sweetalert2/dist/sweetalert2.min.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  ion-app {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+  }
+
+  ion-router-outlet {
+    position: relative;
+    min-height: 0;
+    flex: 1;
+  }
+
+  ion-content {
+    --background: transparent;
+  }
+}

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -8,15 +9,43 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/dashboard/dashboard.page').then((m) => m.DashboardPage)
   },
   {
     path: 'bitacora',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/bitacora/bitacora.page').then((m) => m.BitacoraPage)
   },
   {
     path: 'editar/:id',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/edit-entry/edit-entry.page').then((m) => m.EditEntryPage)
+  },
+  {
+    path: 'usuarios',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/users/users.page').then((m) => m.UsersPage)
+  },
+  {
+    path: 'usuarios/nuevo',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/user-form/user-form.page').then((m) => m.UserFormPage)
+  },
+  {
+    path: 'usuarios/editar/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/user-form/user-form.page').then((m) => m.UserFormPage)
+  },
+  {
+    path: 'informes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/reports/reports.page').then((m) => m.ReportsPage)
+  },
+  {
+    path: 'catalogos',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/catalogs/catalogs.page').then((m) => m.CatalogsPage)
   },
   { path: '**', redirectTo: 'login' }
 ];

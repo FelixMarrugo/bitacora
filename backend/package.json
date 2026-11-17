@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "API REST para la bitácora de ingreso de mercancía",
   "private": true,
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -36,6 +39,6 @@
     "@types/node": "^22.10.2",
     "@types/passport-jwt": "^4.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   }
 }

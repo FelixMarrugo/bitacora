@@ -1,0 +1,248 @@
+<ion-content>
+  <main class="mx-auto grid w-full max-w-screen-xl gap-6 p-4 sm:p-6 lg:p-8">
+    <header class="grid gap-2">
+      <p class="text-sm font-semibold text-sky-700">Administración</p>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Catálogos</h1>
+      <p class="text-sm text-slate-500">Administra las opciones disponibles al registrar una entrada.</p>
+    </header>
+
+    <p *ngIf="statusMessage" class="rounded-lg bg-sky-50 px-4 py-3 text-sm text-sky-800" role="status">
+      {{ statusMessage }}
+    </p>
+
+    <section *ngIf="isLoading" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+      Cargando catálogos...
+    </section>
+
+    <div *ngIf="!isLoading" class="grid gap-6 lg:grid-cols-2">
+      <section class="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Proveedores</h2>
+          <p class="mt-1 text-sm text-slate-500">Los proveedores activos aparecen al crear entradas.</p>
+        </div>
+
+        <form class="grid items-end gap-2 sm:grid-cols-[minmax(8rem,0.7fr)_minmax(0,1.3fr)_auto]" (ngSubmit)="addSupplier()">
+          <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+            NIT
+            <input
+              class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="text"
+              name="supplierNit"
+              [(ngModel)]="supplierNit"
+              maxlength="30"
+              placeholder="NIT"
+              required
+            >
+          </label>
+          <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+            Razón social
+            <input
+              class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="text"
+              name="supplierRazonSocial"
+              [(ngModel)]="supplierRazonSocial"
+              maxlength="200"
+              placeholder="Razón social"
+              required
+            >
+          </label>
+          <button class="rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-800" type="submit">
+            Agregar
+          </button>
+        </form>
+
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[600px] text-left text-sm text-slate-600">
+            <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <tr><th class="px-3 py-3" scope="col">NIT</th><th class="px-3 py-3" scope="col">Razón social</th><th class="px-3 py-3" scope="col">Estado</th><th class="px-3 py-3" scope="col">Acciones</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngIf="suppliers.length === 0"><td colspan="4" class="px-3 py-8 text-center text-slate-500">No hay proveedores registrados.</td></tr>
+              <tr *ngFor="let item of suppliers">
+                <td class="px-3 py-3">
+                  <ng-container *ngIf="editingSupplierId !== item.id; else editSupplierNit">
+                    {{ item.nit || 'NIT pendiente' }}
+                  </ng-container>
+                  <ng-template #editSupplierNit>
+                    <input class="w-full rounded-lg border border-slate-300 px-2 py-1.5" [(ngModel)]="supplierEditNit" [name]="'supplier-nit-' + item.id" maxlength="30">
+                  </ng-template>
+                </td>
+                <td class="px-3 py-3 font-medium text-slate-900">
+                  <ng-container *ngIf="editingSupplierId !== item.id; else editSupplierRazonSocial">
+                    {{ item.razonSocial }}
+                  </ng-container>
+                  <ng-template #editSupplierRazonSocial>
+                    <input class="w-full rounded-lg border border-slate-300 px-2 py-1.5" [(ngModel)]="supplierEditRazonSocial" [name]="'supplier-reason-' + item.id" maxlength="200">
+                  </ng-template>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="rounded-full px-2.5 py-1 text-xs font-medium" [ngClass]="item.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                    {{ item.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="px-3 py-3">
+                  <div class="flex flex-wrap gap-2">
+                    <ng-container *ngIf="editingSupplierId === item.id; else supplierActions">
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-emerald-700 transition-colors hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                        type="button"
+                        aria-label="Guardar cambios del proveedor"
+                        title="Guardar cambios"
+                        (click)="saveSupplierEdit(item)"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                        </svg>
+                      </button>
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-100"
+                        type="button"
+                        aria-label="Cancelar edición del proveedor"
+                        title="Cancelar edición"
+                        (click)="cancelSupplierEdit()"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                        </svg>
+                      </button>
+                    </ng-container>
+                    <ng-template #supplierActions>
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-sky-700 transition-colors hover:bg-sky-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                        type="button"
+                        [attr.aria-label]="'Editar proveedor ' + item.razonSocial"
+                        title="Editar proveedor"
+                        (click)="beginSupplierEdit(item)"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <path d="m15 5 4 4M4 20l4-.8L19.2 8a2.83 2.83 0 0 0-4-4L4 15.2 4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
+                      </button>
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors focus:outline-none focus:ring-4"
+                        [ngClass]="item.activo ? 'text-amber-700 hover:bg-amber-50 focus:ring-amber-100' : 'text-emerald-700 hover:bg-emerald-50 focus:ring-emerald-100'"
+                        type="button"
+                        [attr.aria-label]="item.activo ? 'Desactivar proveedor' : 'Activar proveedor'"
+                        [attr.title]="item.activo ? 'Desactivar proveedor' : 'Activar proveedor'"
+                        (click)="toggleSupplier(item)"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <rect x="3" y="6" width="18" height="12" rx="6" stroke="currentColor" stroke-width="1.8"/>
+                          <circle [attr.cx]="item.activo ? 15 : 9" cy="12" r="3" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    </ng-template>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Productos</h2>
+          <p class="mt-1 text-sm text-slate-500">Los productos activos se pueden agregar a una entrada.</p>
+        </div>
+
+        <form class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]" (ngSubmit)="addProduct()">
+          <label class="sr-only" for="new-product">Nombre del producto</label>
+          <input
+            id="new-product"
+            class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            type="text"
+            name="productName"
+            [(ngModel)]="productName"
+            maxlength="200"
+            placeholder="Nuevo producto"
+            required
+          >
+          <button class="rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-800" type="submit">
+            Agregar
+          </button>
+        </form>
+
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[420px] text-left text-sm text-slate-600">
+            <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <tr><th class="px-3 py-3" scope="col">Producto</th><th class="px-3 py-3" scope="col">Estado</th><th class="px-3 py-3" scope="col">Acciones</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngIf="products.length === 0"><td colspan="3" class="px-3 py-8 text-center text-slate-500">No hay productos registrados.</td></tr>
+              <tr *ngFor="let item of products">
+                <td class="px-3 py-3 font-medium text-slate-900">
+                  <ng-container *ngIf="editingProductId !== item.id; else editProduct">
+                    {{ item.nombre }}
+                  </ng-container>
+                  <ng-template #editProduct>
+                    <input class="w-full rounded-lg border border-slate-300 px-2 py-1.5" [(ngModel)]="productEditName" [name]="'product-' + item.id" maxlength="200">
+                  </ng-template>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="rounded-full px-2.5 py-1 text-xs font-medium" [ngClass]="item.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                    {{ item.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="px-3 py-3">
+                  <div class="flex flex-wrap gap-2">
+                    <ng-container *ngIf="editingProductId === item.id; else productActions">
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-emerald-700 transition-colors hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                        type="button"
+                        aria-label="Guardar cambios del producto"
+                        title="Guardar cambios"
+                        (click)="saveProductEdit(item)"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                        </svg>
+                      </button>
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-100"
+                        type="button"
+                        aria-label="Cancelar edición del producto"
+                        title="Cancelar edición"
+                        (click)="cancelProductEdit()"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                        </svg>
+                      </button>
+                    </ng-container>
+                    <ng-template #productActions>
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-sky-700 transition-colors hover:bg-sky-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                        type="button"
+                        [attr.aria-label]="'Editar producto ' + item.nombre"
+                        title="Editar producto"
+                        (click)="beginProductEdit(item)"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <path d="m15 5 4 4M4 20l4-.8L19.2 8a2.83 2.83 0 0 0-4-4L4 15.2 4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
+                      </button>
+                      <button
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors focus:outline-none focus:ring-4"
+                        [ngClass]="item.activo ? 'text-amber-700 hover:bg-amber-50 focus:ring-amber-100' : 'text-emerald-700 hover:bg-emerald-50 focus:ring-emerald-100'"
+                        type="button"
+                        [attr.aria-label]="item.activo ? 'Desactivar producto' : 'Activar producto'"
+                        [attr.title]="item.activo ? 'Desactivar producto' : 'Activar producto'"
+                        (click)="toggleProduct(item)"
+                      >
+                        <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                          <rect x="3" y="6" width="18" height="12" rx="6" stroke="currentColor" stroke-width="1.8"/>
+                          <circle [attr.cx]="item.activo ? 15 : 9" cy="12" r="3" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    </ng-template>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</ion-content>

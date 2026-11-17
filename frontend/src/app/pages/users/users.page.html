@@ -1,0 +1,112 @@
+<ion-content>
+  <main class="mx-auto grid w-full max-w-screen-2xl gap-6 p-4 sm:p-6 lg:p-8">
+    <header class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+      <div>
+        <p class="text-sm font-semibold text-sky-700">Accesos del sistema</p>
+        <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Usuarios</h1>
+        <p class="mt-2 text-sm text-slate-500">Administra las cuentas registradas en la aplicación.</p>
+      </div>
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 focus:outline-none focus:ring-4 focus:ring-sky-200"
+        type="button"
+        (click)="createUser()"
+      >
+        <span aria-hidden="true">+</span>
+        Registrar usuario
+      </button>
+    </header>
+
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="grid gap-3 border-b border-slate-200 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5">
+        <label class="grid gap-1 text-xs font-medium text-slate-600">
+          <span class="sr-only">Buscar usuarios</span>
+          <input
+            class="w-full max-w-xl rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            type="search"
+            [(ngModel)]="searchTerm"
+            placeholder="Buscar por nombre o usuario"
+            aria-label="Buscar por nombre o usuario"
+          >
+        </label>
+        <label class="grid grid-cols-[auto_minmax(9rem,1fr)] items-center gap-3 text-sm font-medium text-slate-600">
+          Estado
+          <select
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            [(ngModel)]="statusFilter"
+            aria-label="Filtrar usuarios por estado"
+          >
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[680px] text-left text-sm text-slate-600">
+          <thead class="border-y border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+            <tr>
+              <th class="px-6 py-3.5" scope="col">Nombre</th>
+              <th class="px-6 py-3.5" scope="col">Apellido</th>
+              <th class="px-6 py-3.5" scope="col">Usuario</th>
+              <th class="px-6 py-3.5" scope="col">Estado</th>
+              <th class="px-6 py-3.5" scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngIf="isLoading">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">Cargando usuarios...</td>
+            </tr>
+            <tr *ngIf="!isLoading && users.length === 0">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">Todavía no hay usuarios registrados.</td>
+            </tr>
+            <tr *ngIf="!isLoading && users.length > 0 && filteredUsers.length === 0">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                No hay usuarios que coincidan con la búsqueda y el filtro.
+              </td>
+            </tr>
+            <tr *ngFor="let user of filteredUsers" class="hover:bg-slate-50">
+              <td class="px-6 py-4 font-medium text-slate-900">{{ user.firstName }}</td>
+              <td class="px-6 py-4 text-slate-700">{{ user.lastName }}</td>
+              <td class="px-6 py-4">{{ user.username }}</td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
+                  [ngClass]="user.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'"
+                >
+                  {{ user.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="whitespace-nowrap px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <button
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-sky-700 transition-colors hover:bg-sky-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                    type="button"
+                    [attr.aria-label]="'Editar usuario ' + user.username"
+                    title="Editar usuario"
+                    (click)="editUser(user)"
+                  >
+                    <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                      <path d="m15 5 4 4M4 20l4-.8L19.2 8a2.83 2.83 0 0 0-4-4L4 15.2 4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+                  <button
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-rose-700 transition-colors hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100"
+                    type="button"
+                    [attr.aria-label]="'Eliminar usuario ' + user.username"
+                    title="Eliminar usuario"
+                    (click)="deleteUser(user)"
+                  >
+                    <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</ion-content>

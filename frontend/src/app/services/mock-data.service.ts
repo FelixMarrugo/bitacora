@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { EntradaBitacora } from '../models/entrada.model';
+import { Observable, of, throwError } from 'rxjs';
+import { CatalogoItem, EntradaBitacora, ProveedorCatalogoItem } from '../models/entrada.model';
 
 type DashboardSummary = {
   totalEntradas: number;
@@ -12,10 +12,15 @@ type DashboardSummary = {
 @Injectable({ providedIn: 'root' })
 export class MockDataService {
   private readonly storageKey = 'bitacora.mock.entries';
+  private readonly supplierStorageKey = 'bitacora.mock.suppliers';
+  private readonly productStorageKey = 'bitacora.mock.products';
   private nextId = 1;
+  private nextSupplierId = 1;
+  private nextProductId = 1;
 
   constructor() {
     this.initializeEntries();
+    this.initializeCatalogs();
   }
 
   getDashboard(): Observable<DashboardSummary> {
@@ -41,17 +46,98 @@ export class MockDataService {
     return of(this.getEntries());
   }
 
+  getSuppliers(activeOnly = false): Observable<ProveedorCatalogoItem[]> {
+    const suppliers = this.readSuppliers() ?? [];
+    return of(suppliers.filter((item) => !activeOnly || item.activo));
+  }
+
+  getProducts(activeOnly = false): Observable<CatalogoItem[]> {
+    const products = this.readCatalog(this.productStorageKey) ?? [];
+    return of(products.filter((item) => !activeOnly || item.activo));
+  }
+
+  createSupplier(nit: string, razonSocial: string): Observable<ProveedorCatalogoItem> {
+    const cleanNit = nit.trim();
+    const cleanName = razonSocial.trim();
+    const suppliers = this.readSuppliers() ?? [];
+    if (!cleanNit || !this.normalizeNit(cleanNit) || !cleanName) {
+      return throwError(() => new Error('El NIT y la razón social son obligatorios.'));
+    }
+    if (suppliers.some((item) =>
+      this.normalizeNit(item.nit) === this.normalizeNit(cleanNit) ||
+      item.razonSocial.toLocaleLowerCase() === cleanName.toLocaleLowerCase()
+    )) {
+      return throwError(() => new Error('Ya existe un proveedor con ese NIT o razón social.'));
+    }
+
+    const supplier: ProveedorCatalogoItem = {
+      id: this.nextSupplierId++,
+      nombre: cleanName,
+      nit: cleanNit,
+      razonSocial: cleanName,
+      activo: true
+    };
+    suppliers.push(supplier);
+    this.saveSuppliers(suppliers);
+    return of({ ...supplier });
+  }
+
+  updateSupplier(
+    id: number,
+    changes: Partial<Pick<ProveedorCatalogoItem, 'nit' | 'razonSocial' | 'activo'>>
+  ): Observable<ProveedorCatalogoItem> {
+    const suppliers = this.readSuppliers() ?? [];
+    const index = suppliers.findIndex((item) => item.id === id);
+    if (index < 0) {
+      return throwError(() => new Error('No se encontró el proveedor.'));
+    }
+
+    const nit = changes.nit?.trim();
+    const razonSocial = changes.razonSocial?.trim();
+    if ((changes.nit !== undefined && !nit) || (changes.razonSocial !== undefined && !razonSocial)) {
+      return throwError(() => new Error('El NIT y la razón social son obligatorios.'));
+    }
+    if (suppliers.some((item) =>
+      item.id !== id && (
+        (!!nit && this.normalizeNit(item.nit) === this.normalizeNit(nit)) ||
+        (!!razonSocial && item.razonSocial.toLocaleLowerCase() === razonSocial.toLocaleLowerCase())
+      )
+    )) {
+      return throwError(() => new Error('Ya existe un proveedor con ese NIT o razón social.'));
+    }
+
+    suppliers[index] = {
+      ...suppliers[index],
+      ...(nit && { nit }),
+      ...(razonSocial && { nombre: razonSocial, razonSocial }),
+      ...(changes.activo !== undefined && { activo: changes.activo })
+    };
+    this.saveSuppliers(suppliers);
+    return of({ ...suppliers[index] });
+  }
+
+  createProduct(nombre: string): Observable<CatalogoItem> {
+    return this.createCatalogItem(this.productStorageKey, nombre);
+  }
+
+  updateProduct(
+    id: number,
+    changes: Partial<Pick<CatalogoItem, 'nombre' | 'activo'>>
+  ): Observable<CatalogoItem> {
+    return this.updateCatalogItem(this.productStorageKey, id, changes);
+  }
+
   getEntrada(id: number): Observable<EntradaBitacora> {
     const entry = this.getEntries().find((item) => item.id === id);
-    return of(entry ? { ...entry } : ({} as EntradaBitacora));
+    return of(entry ? this.copyEntry(entry) : ({} as EntradaBitacora));
   }
 
   createEntrada(payload: EntradaBitacora): Observable<EntradaBitacora> {
     const entries = this.getEntries();
-    const created: EntradaBitacora = { ...payload, id: this.nextId++ };
+    const created = this.normalizeEntry({ ...payload, id: this.nextId++ });
     entries.push(created);
     this.saveEntries(entries);
-    return of({ ...created });
+    return of(this.copyEntry(created));
   }
 
   updateEntrada(id: number, payload: Partial<EntradaBitacora>): Observable<EntradaBitacora> {
@@ -61,9 +147,9 @@ export class MockDataService {
       return of({} as EntradaBitacora);
     }
 
-    entries[index] = { ...entries[index], ...payload, id };
+    entries[index] = this.normalizeEntry({ ...entries[index], ...payload, id });
     this.saveEntries(entries);
-    return of({ ...entries[index] });
+    return of(this.copyEntry(entries[index]));
   }
 
   deleteEntrada(id: number): Observable<{ deleted: boolean; id: number }> {
@@ -118,6 +204,142 @@ export class MockDataService {
 
     this.nextId = sampleEntries.length + 1;
     this.saveEntries(sampleEntries);
+  }
+
+  private initializeCatalogs(): void {
+    const entries = this.getEntries();
+    const suppliers = this.readSuppliers()
+      ?? this.uniqueNames(entries.map((entry) => entry.proveedor))
+        .map((item) => ({ ...item, nit: '', razonSocial: item.nombre }));
+    const products = this.readCatalog(this.productStorageKey, false)
+      ?? this.uniqueNames(entries.flatMap((entry) =>
+        entry.productos?.map((item) => item.producto) ?? (entry.producto ? [entry.producto] : [])
+      ));
+
+    this.saveSuppliers(suppliers);
+    this.saveCatalog(this.productStorageKey, products);
+    this.nextSupplierId = Math.max(0, ...suppliers.map((item) => item.id)) + 1;
+    this.nextProductId = Math.max(0, ...products.map((item) => item.id)) + 1;
+  }
+
+  private uniqueNames(names: string[]): CatalogoItem[] {
+    return [...new Set(names.map((name) => name.trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b))
+      .map((nombre, index) => ({ id: index + 1, nombre, activo: true }));
+  }
+
+  private createCatalogItem(storageKey: string, nombre: string): Observable<CatalogoItem> {
+    const cleanName = nombre.trim();
+    const items = this.readCatalog(storageKey) ?? [];
+    if (!cleanName) {
+      return throwError(() => new Error('El nombre es obligatorio.'));
+    }
+    if (items.some((item) => item.nombre.toLocaleLowerCase() === cleanName.toLocaleLowerCase())) {
+      return throwError(() => new Error('Ya existe un producto con ese nombre.'));
+    }
+
+    const item = {
+      id: this.nextProductId++,
+      nombre: cleanName,
+      activo: true
+    };
+    items.push(item);
+    this.saveCatalog(storageKey, items);
+    return of({ ...item });
+  }
+
+  private updateCatalogItem(
+    storageKey: string,
+    id: number,
+    changes: Partial<Pick<CatalogoItem, 'nombre' | 'activo'>>
+  ): Observable<CatalogoItem> {
+    const items = this.readCatalog(storageKey) ?? [];
+    const index = items.findIndex((item) => item.id === id);
+    if (index < 0) {
+      return throwError(() => new Error('No se encontró el elemento del catálogo.'));
+    }
+
+    const nombre = changes.nombre?.trim();
+    if (changes.nombre !== undefined && !nombre) {
+      return throwError(() => new Error('El nombre es obligatorio.'));
+    }
+    if (nombre && items.some((item) =>
+      item.id !== id && item.nombre.toLocaleLowerCase() === nombre.toLocaleLowerCase()
+    )) {
+      return throwError(() => new Error('Ya existe un elemento con ese nombre.'));
+    }
+
+    items[index] = {
+      ...items[index],
+      ...(nombre && { nombre }),
+      ...(changes.activo !== undefined && { activo: changes.activo })
+    };
+    this.saveCatalog(storageKey, items);
+    return of({ ...items[index] });
+  }
+
+  private readCatalog(storageKey: string, useDefault = true): CatalogoItem[] | null {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      return JSON.parse(stored) as CatalogoItem[];
+    }
+    return useDefault ? [] : null;
+  }
+
+  private readSuppliers(): ProveedorCatalogoItem[] | null {
+    const stored = localStorage.getItem(this.supplierStorageKey);
+    if (!stored) {
+      return null;
+    }
+
+    const items = JSON.parse(stored) as Array<Partial<ProveedorCatalogoItem> & {
+      id: number;
+      nombre: string;
+      activo?: boolean;
+    }>;
+    return items.map((item) => {
+      const razonSocial = item.razonSocial?.trim() || item.nombre;
+      return {
+        id: item.id,
+        nombre: razonSocial,
+        nit: item.nit?.trim() ?? '',
+        razonSocial,
+        activo: item.activo ?? true
+      };
+    });
+  }
+
+  private saveSuppliers(suppliers: ProveedorCatalogoItem[]): void {
+    localStorage.setItem(this.supplierStorageKey, JSON.stringify(suppliers));
+  }
+
+  private normalizeNit(value: string): string {
+    return value.toLocaleLowerCase().replace(/[\s.-]/g, '');
+  }
+
+  private saveCatalog(storageKey: string, items: CatalogoItem[]): void {
+    localStorage.setItem(storageKey, JSON.stringify(items));
+  }
+
+  private normalizeEntry(entry: EntradaBitacora): EntradaBitacora {
+    if (!entry.productos?.length) {
+      return { ...entry };
+    }
+
+    const productos = entry.productos.map((item) => ({ ...item }));
+    return {
+      ...entry,
+      productos,
+      producto: productos.map((item) => item.producto).join(', '),
+      cantidad: productos.reduce((total, item) => total + Number(item.cantidad), 0)
+    };
+  }
+
+  private copyEntry(entry: EntradaBitacora): EntradaBitacora {
+    return {
+      ...entry,
+      productos: entry.productos?.map((item) => ({ ...item }))
+    };
   }
 
   private getEntries(): EntradaBitacora[] {

@@ -4,16 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular/lazy';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { EntradaBitacora } from '../../models/entrada.model';
+import { EntradaBitacora, EntradaProducto } from '../../models/entrada.model';
 import { ApiService } from '../../services/api.service';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
-  templateUrl: './dashboard.page.html',
-  styleUrls: ['./dashboard.page.scss']
+  templateUrl: './dashboard.page.html'
 })
 export class DashboardPage implements OnInit {
   summary = {
@@ -25,12 +23,13 @@ export class DashboardPage implements OnInit {
 
   entries: EntradaBitacora[] = [];
   filteredEntries: EntradaBitacora[] = [];
+  entrySearch = '';
+  erpFilter: 'all' | 'entered' | 'pending' = 'all';
   dateFrom = '';
   dateTo = '';
 
   constructor(
     private readonly apiService: ApiService,
-    private readonly authService: AuthService,
     private readonly router: Router
   ) {}
 
@@ -43,6 +42,39 @@ export class DashboardPage implements OnInit {
   ionViewWillEnter(): void {
     this.loadDashboard();
     this.loadEntries();
+  }
+
+  get visibleEntries(): EntradaBitacora[] {
+    const searchTerm = this.entrySearch.trim().toLocaleLowerCase();
+
+    return this.filteredEntries.filter((entry) => {
+      const matchesSearch = `${entry.proveedor} ${entry.proveedorNit ?? ''} ${this.productSummary(entry)} ${entry.ordenCompra ?? ''}`
+        .toLocaleLowerCase()
+        .includes(searchTerm);
+      const matchesErp = this.erpFilter === 'all'
+        || entry.yaIngresadoErp === (this.erpFilter === 'entered');
+      return matchesSearch && matchesErp;
+    });
+  }
+
+  productSummary(entry: EntradaBitacora): string {
+    return this.productLines(entry)
+      .map((item) => `${item.producto} (${item.cantidad})`)
+      .join(', ');
+  }
+
+  productLines(entry: EntradaBitacora): EntradaProducto[] {
+    if (entry.productos?.length) {
+      return entry.productos;
+    }
+    return entry.producto
+      ? [{ producto: entry.producto, cantidad: Number(entry.cantidad ?? 0) }]
+      : [];
+  }
+
+  totalQuantity(entry: EntradaBitacora): number {
+    return this.productLines(entry)
+      .reduce((total, item) => total + Number(item.cantidad), 0);
   }
 
   private getCurrentMonthRange(): { from: string; to: string } {
@@ -167,7 +199,9 @@ export class DashboardPage implements OnInit {
             icon: 'success',
             title: 'Entrada eliminada',
             text: 'La entrada se eliminó correctamente.',
-            confirmButtonText: 'Aceptar'
+            timer: 1500,
+            timerProgressBar: true,
+            showConfirmButton: false
           });
         },
         error: () => {
@@ -180,10 +214,5 @@ export class DashboardPage implements OnInit {
         }
       });
     });
-  }
-
-  logout(): void {
-    this.authService.clearSession();
-    this.router.navigateByUrl('/login');
   }
 }

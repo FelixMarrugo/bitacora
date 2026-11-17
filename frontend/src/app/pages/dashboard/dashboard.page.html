@@ -1,114 +1,189 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Dashboard</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="logout()">Salir</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <main class="mx-auto grid w-full max-w-screen-2xl gap-6 p-4 sm:p-6 lg:p-8">
+    <header class="grid gap-4">
+      <div>
+        <p class="text-sm font-semibold text-sky-700">Resumen de operaciones</p>
+        <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
+      </div>
+    </header>
 
-<ion-content class="ion-padding">
-  <div class="summary-grid">
-    <ion-card>
-      <ion-card-content>
-        <p class="label">Entradas del mes</p>
-        <h2>{{ summary.entradas }}</h2>
-      </ion-card-content>
-    </ion-card>
+    <section class="grid gap-4 md:grid-cols-2" aria-label="Resumen y filtros">
+      <div class="grid grid-cols-3 gap-2 sm:gap-3 md:col-start-1 md:row-start-1">
+        <article class="grid min-h-28 content-between gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+          <p class="text-[11px] font-medium leading-tight text-slate-500 sm:text-sm sm:leading-normal">Entradas del mes</p>
+          <h2 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{{ summary.entradas }}</h2>
+        </article>
+        <article class="grid min-h-28 content-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 shadow-sm sm:p-4">
+          <p class="text-[11px] font-medium leading-tight text-amber-800 sm:text-sm sm:leading-normal">Pendientes</p>
+          <h2 class="text-xl font-bold tracking-tight text-amber-900 sm:text-2xl">{{ summary.pendientes }}</h2>
+        </article>
+        <article class="grid min-h-28 content-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm sm:p-4">
+          <p class="text-[11px] font-medium leading-tight text-emerald-800 sm:text-sm sm:leading-normal">Ingresados al ERP</p>
+          <h2 class="text-xl font-bold tracking-tight text-emerald-900 sm:text-2xl">{{ summary.enErp }}</h2>
+        </article>
+      </div>
 
-    <ion-card>
-      <ion-card-content>
-        <p class="label">Proveedor activo</p>
-        <h2>{{ summary.proveedor }}</h2>
-      </ion-card-content>
-    </ion-card>
+      <article class="grid content-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 md:col-start-2 md:row-span-2 md:row-start-1">
+        <h2 class="text-sm font-semibold text-slate-900">Filtrar por fecha</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="grid gap-1 text-xs font-medium text-slate-600">
+            Desde
+            <input
+              class="min-w-0 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs text-slate-900 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="date"
+              [(ngModel)]="dateFrom"
+            >
+          </label>
+          <label class="grid gap-1 text-xs font-medium text-slate-600">
+            Hasta
+            <input
+              class="min-w-0 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs text-slate-900 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="date"
+              [(ngModel)]="dateTo"
+            >
+          </label>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            class="rounded-lg bg-sky-700 px-2 py-2 text-xs font-semibold text-white hover:bg-sky-800 focus:outline-none focus:ring-4 focus:ring-sky-200"
+            type="button"
+            (click)="applyFilter()"
+          >
+            Filtrar
+          </button>
+          <button
+            class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
+            type="button"
+            (click)="resetFilter()"
+          >
+            Mes actual
+          </button>
+        </div>
+      </article>
 
-    <ion-card>
-      <ion-card-content>
-        <p class="label">Pendientes</p>
-        <h2>{{ summary.pendientes }}</h2>
-      </ion-card-content>
-    </ion-card>
+      <div class="flex justify-start md:col-start-1 md:row-start-2">
+        <button
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 focus:outline-none focus:ring-4 focus:ring-sky-200"
+          type="button"
+          (click)="openCreateForm()"
+        >
+          <span aria-hidden="true">+</span>
+          Nueva entrada
+        </button>
+      </div>
+    </section>
 
-    <ion-card>
-      <ion-card-content>
-        <p class="label">Ingresados al ERP</p>
-        <h2>{{ summary.enErp }}</h2>
-      </ion-card-content>
-    </ion-card>
-  </div>
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="grid gap-4 border-b border-slate-200 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Entradas</h2>
+          <p class="mt-1 text-sm text-slate-500">Consulta, edita o elimina las entradas registradas.</p>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-[minmax(14rem,1fr)_auto]">
+          <label class="grid gap-1 text-xs font-medium text-slate-600">
+            <span class="sr-only">Buscar entradas</span>
+            <input
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="search"
+              [(ngModel)]="entrySearch"
+              placeholder="Buscar proveedor, producto u orden"
+              aria-label="Buscar proveedor, producto u orden"
+            >
+          </label>
+          <label class="grid gap-1 text-xs font-medium text-slate-600">
+            <span class="sr-only">Filtrar por estado ERP</span>
+            <select
+              class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              [(ngModel)]="erpFilter"
+              aria-label="Filtrar por estado ERP"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="entered">Ingresados al ERP</option>
+              <option value="pending">Pendientes ERP</option>
+            </select>
+          </label>
+        </div>
+      </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Filtrar entradas por fecha</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col size="12" size-md="4">
-            <ion-input label="Desde" labelPlacement="stacked" type="date" [(ngModel)]="dateFrom"></ion-input>
-          </ion-col>
-          <ion-col size="12" size-md="4">
-            <ion-input label="Hasta" labelPlacement="stacked" type="date" [(ngModel)]="dateTo"></ion-input>
-          </ion-col>
-          <ion-col size="12" size-md="2">
-            <ion-button expand="block" (click)="applyFilter()">Filtrar</ion-button>
-          </ion-col>
-          <ion-col size="12" size-md="2">
-            <ion-button expand="block" fill="outline" (click)="resetFilter()">Mes actual</ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-  </ion-card>
-
-  <div class="toolbar-actions">
-    <ion-button color="success" (click)="openCreateForm()">Nueva orden</ion-button>
-  </div>
-
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Entradas del mes</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <div class="table-wrap">
-        <table>
-          <thead>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[900px] text-left text-sm text-slate-600">
+          <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
             <tr>
-              <th>Fecha</th>
-              <th>Proveedor</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Hora</th>
-              <th>Orden</th>
-              <th>ERP</th>
-              <th>Acciones</th>
+              <th class="px-5 py-3.5" scope="col">Fecha</th>
+              <th class="px-5 py-3.5" scope="col">Proveedor</th>
+              <th class="px-5 py-3.5" scope="col">Productos recibidos y cantidad</th>
+              <th class="px-5 py-3.5" scope="col">Hora</th>
+              <th class="px-5 py-3.5" scope="col">Orden</th>
+              <th class="px-5 py-3.5" scope="col">Estado ERP</th>
+              <th class="px-5 py-3.5" scope="col">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <tr *ngIf="filteredEntries.length === 0">
-              <td colspan="8" class="empty-state">No hay entradas para ese rango de fechas.</td>
-            </tr>
-            <tr *ngFor="let entry of filteredEntries">
-              <td>{{ entry.fecha }}</td>
-              <td>{{ entry.proveedor }}</td>
-              <td>{{ entry.producto || 'Sin especificar' }}</td>
-              <td>{{ entry.cantidad }}</td>
-              <td>{{ entry.hora }}</td>
-              <td>{{ entry.ordenCompra || 'N/A' }}</td>
-              <td>
-                <ion-badge [color]="entry.yaIngresadoErp ? 'success' : 'warning'">
-                  {{ entry.yaIngresadoErp ? 'Ingresado' : 'No ingresado' }}
-                </ion-badge>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngIf="visibleEntries.length === 0">
+              <td colspan="7" class="px-5 py-12 text-center text-sm text-slate-500">
+                No hay entradas que coincidan con los filtros seleccionados.
               </td>
-              <td class="table-actions">
-                <ion-button size="small" fill="clear" color="primary" (click)="openEditForm(entry)">Editar</ion-button>
-                <ion-button size="small" fill="clear" color="danger" (click)="deleteEntry(entry.id!)">Eliminar</ion-button>
+            </tr>
+            <tr *ngFor="let entry of visibleEntries" class="hover:bg-slate-50">
+              <td class="whitespace-nowrap px-5 py-4 text-slate-900">{{ entry.fecha }}</td>
+              <td class="px-5 py-4 font-medium text-slate-900">{{ entry.proveedor }}</td>
+              <td class="min-w-[220px] px-5 py-4">
+                <ng-container *ngIf="productLines(entry) as products">
+                  <ng-container *ngIf="products.length > 0; else noProducts">
+                    <div class="grid gap-1.5">
+                      <div *ngFor="let item of products" class="flex items-start justify-between gap-4">
+                        <span class="text-slate-700">{{ item.producto }}</span>
+                        <span class="shrink-0 font-medium text-slate-900">{{ item.cantidad }}</span>
+                      </div>
+                      <div *ngIf="products.length > 1" class="mt-1 flex justify-between gap-4 border-t border-slate-200 pt-2 font-semibold text-slate-900">
+                        <span>Total</span>
+                        <span>{{ totalQuantity(entry) }}</span>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
+                <ng-template #noProducts>Sin especificar</ng-template>
+              </td>
+              <td class="whitespace-nowrap px-5 py-4">{{ entry.hora }}</td>
+              <td class="whitespace-nowrap px-5 py-4">{{ entry.ordenCompra || 'N/A' }}</td>
+              <td class="px-5 py-4">
+                <span
+                  class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
+                  [ngClass]="entry.yaIngresadoErp ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+                >
+                  {{ entry.yaIngresadoErp ? 'Ingresado' : 'Pendiente' }}
+                </span>
+              </td>
+              <td class="whitespace-nowrap px-5 py-4">
+                <div class="flex items-center gap-2">
+                  <button
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-sky-700 transition-colors hover:bg-sky-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                    type="button"
+                    [attr.aria-label]="'Editar entrada ' + (entry.ordenCompra || entry.id)"
+                    title="Editar entrada"
+                    (click)="openEditForm(entry)"
+                  >
+                    <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                      <path d="m15 5 4 4M4 20l4-.8L19.2 8a2.83 2.83 0 0 0-4-4L4 15.2 4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+                  <button
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-rose-700 transition-colors hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100"
+                    type="button"
+                    [attr.aria-label]="'Eliminar entrada ' + (entry.ordenCompra || entry.id)"
+                    title="Eliminar entrada"
+                    (click)="deleteEntry(entry.id!)"
+                  >
+                    <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </ion-card-content>
-  </ion-card>
+    </section>
+  </main>
 </ion-content>

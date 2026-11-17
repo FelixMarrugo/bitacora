@@ -16,11 +16,17 @@ export class Entry {
   @Column({ type: 'varchar', length: 200 })
   proveedor: string;
 
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  proveedorNit?: string;
+
   @Column({ type: 'varchar', length: 200, nullable: true })
   producto?: string;
 
   @Column({ type: 'int', default: 0 })
   cantidad: number;
+
+  @Column({ type: 'json', nullable: true })
+  productos?: { producto: string; cantidad: number }[];
 
   @Column({ type: 'time' })
   hora: string;

@@ -1,43 +1,86 @@
-<ion-content class="ion-padding">
-  <div class="auth-shell">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Bitácora de control</ion-card-title>
-        <ion-card-subtitle>Ingreso de mercancía y seguimiento ERP</ion-card-subtitle>
-      </ion-card-header>
+<ion-content>
+  <main class="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(26rem,0.9fr)]">
+    <section class="grid content-center gap-10 bg-slate-950 px-6 py-10 text-white sm:px-12 lg:px-16">
+      <div class="grid gap-8">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-sky-500 text-xl font-bold">B</div>
+        <div class="grid gap-4">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">Control de mercancía</p>
+          <h1 class="max-w-xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+            Una bitácora clara para cada recepción.
+          </h1>
+          <p class="max-w-lg text-base leading-7 text-slate-300">
+            Registra las entradas, consulta órdenes y da seguimiento a su ingreso en el ERP.
+          </p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+          <p class="text-xs text-slate-400">Registro</p>
+          <p class="mt-1 text-sm font-semibold">Recepciones</p>
+        </div>
+        <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+          <p class="text-xs text-slate-400">Seguimiento</p>
+          <p class="mt-1 text-sm font-semibold">Estado ERP</p>
+        </div>
+        <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+          <p class="text-xs text-slate-400">Consulta</p>
+          <p class="mt-1 text-sm font-semibold">Órdenes</p>
+        </div>
+      </div>
+    </section>
 
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item>
-            <ion-input
-              label="Usuario"
-              labelPlacement="stacked"
+    <section class="grid place-items-center bg-slate-50 p-4 sm:p-8">
+      <div class="grid w-full max-w-md gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9">
+        <header class="grid gap-2">
+          <h2 class="text-2xl font-bold tracking-tight text-slate-900">Bienvenido</h2>
+          <p class="text-sm leading-6 text-slate-500">Ingresa tus credenciales para continuar.</p>
+        </header>
+
+        <form class="grid gap-5" (ngSubmit)="login()" novalidate>
+          <label class="grid gap-2 text-sm font-medium text-slate-700">
+            Usuario
+            <input
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
               [(ngModel)]="username"
+              name="username"
               type="text"
+              autocomplete="username"
               placeholder="Ingrese usuario"
-            ></ion-input>
-          </ion-item>
+              required
+            >
+          </label>
 
-          <ion-item>
-            <ion-input
-              label="Contraseña"
-              labelPlacement="stacked"
+          <label class="grid gap-2 text-sm font-medium text-slate-700">
+            Contraseña
+            <input
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
               [(ngModel)]="password"
+              name="password"
               type="password"
+              autocomplete="current-password"
               placeholder="Ingrese contraseña"
-            ></ion-input>
-          </ion-item>
-        </ion-list>
+              required
+            >
+          </label>
 
-        <ion-text color="danger" *ngIf="errorMessage">
-          <p class="error-message">{{ errorMessage }}</p>
-        </ion-text>
+          <p *ngIf="errorMessage" class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert">
+            {{ errorMessage }}
+          </p>
 
-        <ion-button expand="block" class="login-button" (click)="login()" [disabled]="isLoading">
-          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-          <span *ngIf="!isLoading">Ingresar</span>
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-  </div>
+          <button
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-60"
+            type="submit"
+            [disabled]="isLoading"
+          >
+            <ion-spinner *ngIf="isLoading" name="crescent" class="h-4 w-4"></ion-spinner>
+            <span>{{ isLoading ? 'Ingresando...' : 'Ingresar' }}</span>
+          </button>
+        </form>
+
+        <p class="border-t border-slate-100 pt-5 text-xs leading-5 text-slate-400">
+          Bitácora de control de mercancía
+        </p>
+      </div>
+    </section>
+  </main>
 </ion-content>

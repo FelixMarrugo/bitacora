@@ -10,8 +10,7 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
-  templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss']
+  templateUrl: './login.page.html'
 })
 export class LoginPage {
   username = 'admin';
@@ -30,13 +29,13 @@ export class LoginPage {
 
     this.authService.login({ username: this.username, password: this.password }).subscribe({
       next: ({ access_token, user }) => {
-        this.authService.saveToken(access_token);
-        const username = (user as { username?: string } | null)?.username ?? this.username;
+        this.authService.saveSession(access_token, user);
+        const username = user.username;
         void Swal.fire({
           icon: 'success',
           title: `¡Bienvenido, ${username}!`,
           text: 'Has iniciado sesión correctamente.',
-          timer: 5000,
+          timer: 1500,
           timerProgressBar: true,
           showConfirmButton: false
         }).then(() => this.router.navigateByUrl('/dashboard'));
