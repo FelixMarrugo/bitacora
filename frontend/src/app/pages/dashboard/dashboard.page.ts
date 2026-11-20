@@ -27,6 +27,9 @@ export class DashboardPage implements OnInit {
   erpFilter: 'all' | 'entered' | 'pending' = 'all';
   dateFrom = '';
   dateTo = '';
+  isLoadingSummary = true;
+  isLoadingEntries = true;
+  filterMessage = '';
 
   constructor(
     private readonly apiService: ApiService,
@@ -96,8 +99,10 @@ export class DashboardPage implements OnInit {
   }
 
   loadDashboard(): void {
+    this.isLoadingSummary = true;
     this.apiService.getDashboard().subscribe({
       next: (res: any) => {
+        this.isLoadingSummary = false;
         this.summary = {
           entradas: res.totalEntradas ?? 0,
           proveedor: res.proveedorMasActivo ?? 'Sin registros',
@@ -106,6 +111,7 @@ export class DashboardPage implements OnInit {
         };
       },
       error: () => {
+        this.isLoadingSummary = false;
         this.summary = {
           entradas: 0,
           proveedor: 'Sin registros',
@@ -117,19 +123,28 @@ export class DashboardPage implements OnInit {
   }
 
   loadEntries(): void {
+    this.isLoadingEntries = true;
     this.apiService.getEntradas().subscribe({
       next: (entries) => {
+        this.isLoadingEntries = false;
         this.entries = [...entries].sort((a, b) => b.fecha.localeCompare(a.fecha));
         this.filterEntries();
       },
       error: () => {
+        this.isLoadingEntries = false;
         this.entries = [];
         this.filteredEntries = [];
+        this.filterMessage = 'No se pudieron cargar las entradas. Revisa tu conexión e intenta nuevamente.';
       }
     });
   }
 
   applyFilter(): void {
+    if (this.dateFrom && this.dateTo && this.dateFrom > this.dateTo) {
+      this.filterMessage = 'La fecha inicial no puede ser posterior a la fecha final.';
+      return;
+    }
+    this.filterMessage = '';
     this.filterEntries();
   }
 
@@ -137,6 +152,9 @@ export class DashboardPage implements OnInit {
     const currentMonth = this.getCurrentMonthRange();
     this.dateFrom = currentMonth.from;
     this.dateTo = currentMonth.to;
+    this.filterMessage = '';
+    this.entrySearch = '';
+    this.erpFilter = 'all';
     this.filterEntries();
   }
 

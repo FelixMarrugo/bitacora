@@ -94,6 +94,15 @@
     <div
       class="hidden min-w-0 items-center justify-end gap-3 sm:flex"
     >
+      <button
+        class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-600 hover:border-sky-600 hover:bg-sky-50 hover:text-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+        type="button"
+        aria-label="Abrir ayuda"
+        title="Ayuda"
+        (click)="toggleHelp()"
+      >
+        <span class="text-base font-bold" aria-hidden="true">?</span>
+      </button>
       <ng-container *ngTemplateOutlet="userActions"></ng-container>
     </div>
   </div>
@@ -136,7 +145,74 @@
         <ng-container *ngTemplateOutlet="navigationLinks"></ng-container>
       </nav>
       <div class="flex flex-col gap-3 border-t border-slate-200 p-4">
+        <button
+          class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+          type="button"
+          (click)="toggleHelp()"
+        >
+          <span class="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-400 text-xs" aria-hidden="true">?</span>
+          Ayuda y guía
+        </button>
         <ng-container *ngTemplateOutlet="userActions"></ng-container>
+      </div>
+    </aside>
+  </div>
+
+  <div
+    class="fixed inset-0 z-[60] transition-[visibility] duration-200"
+    [ngClass]="isHelpOpen ? 'visible' : 'invisible pointer-events-none'"
+    [attr.aria-hidden]="isHelpOpen ? null : 'true'"
+  >
+    <button
+      class="absolute inset-0 bg-slate-950/40 transition-opacity duration-200"
+      [ngClass]="isHelpOpen ? 'opacity-100' : 'opacity-0'"
+      type="button"
+      aria-label="Cerrar ayuda"
+      (click)="closeHelp()"
+    ></button>
+    <aside
+      class="absolute inset-y-0 right-0 flex w-[min(28rem,92vw)] flex-col bg-white shadow-2xl transition-transform duration-200"
+      [ngClass]="isHelpOpen ? 'translate-x-0' : 'translate-x-full'"
+      [attr.inert]="isHelpOpen ? null : ''"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="help-title"
+    >
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-sky-700">Centro de ayuda</p>
+          <h2 id="help-title" class="mt-1 text-lg font-bold text-slate-900">Cómo usar Bitácora</h2>
+        </div>
+        <button
+          class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+          type="button"
+          aria-label="Cerrar ayuda"
+          (click)="closeHelp()"
+        >
+          <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5">
+        <div class="grid gap-4 text-sm text-slate-700">
+          <section class="rounded-lg border border-slate-200 p-4">
+            <h3 class="font-semibold text-slate-900">Registrar una entrada</h3>
+            <p class="mt-1">Entra a Dashboard y selecciona Nueva entrada. Completa fecha, proveedor, productos y cantidades; luego guarda.</p>
+          </section>
+          <section class="rounded-lg border border-slate-200 p-4">
+            <h3 class="font-semibold text-slate-900">Editar o eliminar</h3>
+            <p class="mt-1">Usa los botones de lápiz y papelera en la tabla. Las acciones de eliminar siempre solicitan una confirmación.</p>
+          </section>
+          <section class="rounded-lg border border-slate-200 p-4">
+            <h3 class="font-semibold text-slate-900">Buscar y filtrar</h3>
+            <p class="mt-1">Escribe un proveedor, producto u orden en Dashboard. También puedes combinarlo con el filtro de estado ERP y fechas.</p>
+          </section>
+          <section class="rounded-lg border border-slate-200 p-4">
+            <h3 class="font-semibold text-slate-900">Errores y recuperación</h3>
+            <p class="mt-1">Si falta un dato o falla una operación, lee el mensaje junto al campo o en la alerta. Cancela con el botón correspondiente para volver sin guardar.</p>
+          </section>
+        </div>
       </div>
     </aside>
   </div>

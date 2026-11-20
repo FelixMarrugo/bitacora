@@ -11,15 +11,24 @@
       <div class="grid grid-cols-3 gap-2 sm:gap-3 md:col-start-1 md:row-start-1">
         <article class="grid min-h-28 content-between gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
           <p class="text-[11px] font-medium leading-tight text-slate-500 sm:text-sm sm:leading-normal">Entradas del mes</p>
-          <h2 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{{ summary.entradas }}</h2>
+          <h2 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+            <ion-spinner *ngIf="isLoadingSummary" name="crescent" class="h-5 w-5"></ion-spinner>
+            <span *ngIf="!isLoadingSummary">{{ summary.entradas }}</span>
+          </h2>
         </article>
         <article class="grid min-h-28 content-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 shadow-sm sm:p-4">
           <p class="text-[11px] font-medium leading-tight text-amber-800 sm:text-sm sm:leading-normal">Pendientes</p>
-          <h2 class="text-xl font-bold tracking-tight text-amber-900 sm:text-2xl">{{ summary.pendientes }}</h2>
+          <h2 class="text-xl font-bold tracking-tight text-amber-900 sm:text-2xl">
+            <ion-spinner *ngIf="isLoadingSummary" name="crescent" class="h-5 w-5"></ion-spinner>
+            <span *ngIf="!isLoadingSummary">{{ summary.pendientes }}</span>
+          </h2>
         </article>
         <article class="grid min-h-28 content-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm sm:p-4">
           <p class="text-[11px] font-medium leading-tight text-emerald-800 sm:text-sm sm:leading-normal">Ingresados al ERP</p>
-          <h2 class="text-xl font-bold tracking-tight text-emerald-900 sm:text-2xl">{{ summary.enErp }}</h2>
+          <h2 class="text-xl font-bold tracking-tight text-emerald-900 sm:text-2xl">
+            <ion-spinner *ngIf="isLoadingSummary" name="crescent" class="h-5 w-5"></ion-spinner>
+            <span *ngIf="!isLoadingSummary">{{ summary.enErp }}</span>
+          </h2>
         </article>
       </div>
 
@@ -48,6 +57,7 @@
             class="rounded-lg bg-sky-700 px-2 py-2 text-xs font-semibold text-white hover:bg-sky-800 focus:outline-none focus:ring-4 focus:ring-sky-200"
             type="button"
             (click)="applyFilter()"
+            [disabled]="isLoadingEntries"
           >
             Filtrar
           </button>
@@ -59,6 +69,9 @@
             Mes actual
           </button>
         </div>
+        <p *ngIf="filterMessage" class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700" role="alert">
+          {{ filterMessage }}
+        </p>
       </article>
 
       <div class="flex justify-start md:col-start-1 md:row-start-2">
@@ -78,6 +91,9 @@
         <div>
           <h2 class="text-lg font-semibold text-slate-900">Entradas</h2>
           <p class="mt-1 text-sm text-slate-500">Consulta, edita o elimina las entradas registradas.</p>
+          <p *ngIf="!isLoadingEntries" class="mt-2 text-xs font-semibold text-slate-500">
+            {{ visibleEntries.length }} resultado{{ visibleEntries.length === 1 ? '' : 's' }}
+          </p>
         </div>
         <div class="grid gap-3 sm:grid-cols-[minmax(14rem,1fr)_auto]">
           <label class="grid gap-1 text-xs font-medium text-slate-600">
@@ -105,7 +121,17 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div *ngIf="isLoadingEntries" class="grid justify-items-center gap-2 px-5 py-12 text-sm text-slate-500" role="status" aria-live="polite">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Cargando entradas...</span>
+      </div>
+
+      <div *ngIf="!isLoadingEntries && filterMessage" class="mx-5 mt-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">
+        {{ filterMessage }}
+        <button class="ml-2 font-semibold underline" type="button" (click)="resetFilter()">Restablecer filtros</button>
+      </div>
+
+      <div *ngIf="!isLoadingEntries" class="hidden overflow-x-auto md:block">
         <table class="w-full min-w-[900px] text-left text-sm text-slate-600">
           <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
             <tr>
@@ -183,6 +209,74 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div *ngIf="!isLoadingEntries" class="grid gap-3 p-4 md:hidden">
+        <article *ngIf="visibleEntries.length === 0" class="rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center">
+          <p class="font-semibold text-slate-700">No se encontraron entradas</p>
+          <p class="mt-1 text-sm text-slate-500">Cambia los filtros o restablece el mes actual.</p>
+          <button
+            class="mt-4 rounded-lg border border-sky-700 px-3 py-2 text-sm font-semibold text-sky-700"
+            type="button"
+            (click)="resetFilter()"
+          >
+            Restablecer filtros
+          </button>
+        </article>
+
+        <article *ngFor="let entry of visibleEntries" class="grid gap-3 rounded-lg border border-slate-200 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ entry.fecha }} · {{ entry.hora }}</p>
+              <h3 class="mt-1 font-semibold text-slate-900">{{ entry.proveedor }}</h3>
+            </div>
+            <span
+              class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="entry.yaIngresadoErp ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+            >
+              {{ entry.yaIngresadoErp ? 'Ingresado' : 'Pendiente' }}
+            </span>
+          </div>
+
+          <div class="grid gap-1.5 border-y border-slate-100 py-3">
+            <div *ngFor="let item of productLines(entry)" class="flex justify-between gap-4 text-sm">
+              <span class="text-slate-700">{{ item.producto }}</span>
+              <span class="font-semibold text-slate-900">{{ item.cantidad }}</span>
+            </div>
+            <div *ngIf="productLines(entry).length > 1" class="mt-1 flex justify-between gap-4 border-t border-slate-200 pt-2 text-sm font-semibold text-slate-900">
+              <span>Total</span>
+              <span>{{ totalQuantity(entry) }}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm text-slate-600">Orden: <span class="font-semibold text-slate-900">{{ entry.ordenCompra || 'N/A' }}</span></p>
+            <div class="flex items-center gap-1">
+              <button
+                class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-sky-700 hover:bg-sky-50 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                type="button"
+                [attr.aria-label]="'Editar entrada ' + (entry.ordenCompra || entry.id)"
+                title="Editar entrada"
+                (click)="openEditForm(entry)"
+              >
+                <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                  <path d="m15 5 4 4M4 20l4-.8L19.2 8a2.83 2.83 0 0 0-4-4L4 15.2 4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+              </button>
+              <button
+                class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-rose-700 hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100"
+                type="button"
+                [attr.aria-label]="'Eliminar entrada ' + (entry.ordenCompra || entry.id)"
+                title="Eliminar entrada"
+                (click)="deleteEntry(entry.id!)"
+              >
+                <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
   </main>

@@ -11,7 +11,7 @@ import {
   ProveedorCatalogoItem
 } from '../../models/entrada.model';
 import { ApiService } from '../../services/api.service';
-import { filterSuppliers } from '../../utils/supplier-search';
+import { filterSuppliersByName } from '../../utils/supplier-search';
 
 @Component({
   selector: 'app-edit-entry',
@@ -40,9 +40,11 @@ export class EditEntryPage implements OnInit {
   suppliers: ProveedorCatalogoItem[] = [];
   products: CatalogoItem[] = [];
   supplierSearch = '';
+  supplierDropdownOpen = false;
+  activeSupplierIndex = -1;
 
   get filteredSuppliers(): ProveedorCatalogoItem[] {
-    return filterSuppliers(this.suppliers, this.supplierSearch);
+    return filterSuppliersByName(this.suppliers, this.supplierSearch);
   }
 
   constructor(
@@ -76,6 +78,7 @@ export class EditEntryPage implements OnInit {
           cantidad: Number(entry.cantidad ?? 0),
           yaIngresadoErp: !!entry.yaIngresadoErp
         };
+        this.supplierSearch = this.entry.proveedor;
         this.ensureCurrentCatalogValues();
       },
       error: () => {
@@ -149,14 +152,91 @@ export class EditEntryPage implements OnInit {
 
   selectSupplier(razonSocial: string): void {
     const supplier = this.suppliers.find((item) => item.razonSocial === razonSocial);
+    if (!supplier || !this.isSupplierSelectable(supplier)) {
+      return;
+    }
+
     this.entry.proveedor = razonSocial;
-    this.entry.proveedorNit = supplier?.nit ?? '';
-    this.supplierSearch = '';
+    this.entry.proveedorNit = supplier.nit ?? '';
+    this.supplierSearch = razonSocial;
+    this.closeSupplierDropdown();
   }
 
   onSupplierSearch(): void {
-    this.entry.proveedor = '';
-    this.entry.proveedorNit = '';
+    if (this.entry.proveedor !== this.supplierSearch) {
+      this.entry.proveedor = '';
+      this.entry.proveedorNit = '';
+    }
+    this.supplierDropdownOpen = true;
+    this.setFirstSelectableSupplier();
+  }
+
+  openSupplierDropdown(): void {
+    if (this.entry.proveedor && this.supplierSearch === this.entry.proveedor) {
+      this.supplierSearch = '';
+    }
+    this.supplierDropdownOpen = true;
+    this.setFirstSelectableSupplier();
+  }
+
+  closeSupplierDropdown(): void {
+    this.supplierDropdownOpen = false;
+    this.activeSupplierIndex = -1;
+    if (this.entry.proveedor) {
+      this.supplierSearch = this.entry.proveedor;
+    }
+  }
+
+  isSupplierSelectable(supplier: ProveedorCatalogoItem): boolean {
+    return supplier.activo || supplier.razonSocial === this.entry.proveedor;
+  }
+
+  onSupplierKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.supplierDropdownOpen) {
+      event.preventDefault();
+      this.closeSupplierDropdown();
+      return;
+    }
+
+    if (event.key === 'Enter' && this.supplierDropdownOpen) {
+      event.preventDefault();
+      const supplier = this.filteredSuppliers[this.activeSupplierIndex];
+      if (supplier && this.isSupplierSelectable(supplier)) {
+        this.selectSupplier(supplier.razonSocial);
+      }
+      return;
+    }
+
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+      return;
+    }
+
+    event.preventDefault();
+    if (!this.supplierDropdownOpen) {
+      this.openSupplierDropdown();
+      return;
+    }
+
+    const selectableIndexes = this.filteredSuppliers
+      .map((supplier, index) => this.isSupplierSelectable(supplier) ? index : -1)
+      .filter((index) => index >= 0);
+    if (selectableIndexes.length === 0) {
+      this.activeSupplierIndex = -1;
+      return;
+    }
+
+    const currentIndex = selectableIndexes.indexOf(this.activeSupplierIndex);
+    const direction = event.key === 'ArrowDown' ? 1 : -1;
+    const nextIndex = currentIndex < 0
+      ? (direction > 0 ? 0 : selectableIndexes.length - 1)
+      : (currentIndex + direction + selectableIndexes.length) % selectableIndexes.length;
+    this.activeSupplierIndex = selectableIndexes[nextIndex];
+  }
+
+  private setFirstSelectableSupplier(): void {
+    this.activeSupplierIndex = this.filteredSuppliers.findIndex((supplier) =>
+      this.isSupplierSelectable(supplier)
+    );
   }
 
   verifyOrder(): void {

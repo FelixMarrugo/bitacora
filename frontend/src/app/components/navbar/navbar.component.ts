@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class NavbarComponent {
   isMenuOpen = false;
+  isHelpOpen = false;
 
   constructor(
     private readonly authService: AuthService,
@@ -28,6 +29,21 @@ export class NavbarComponent {
 
   closeMenu(): void {
     this.isMenuOpen = false;
+  }
+
+  toggleHelp(): void {
+    this.closeMenu();
+    this.isHelpOpen = !this.isHelpOpen;
+  }
+
+  closeHelp(): void {
+    this.isHelpOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  closeOverlays(): void {
+    this.closeMenu();
+    this.closeHelp();
   }
 
   logout(): void {
