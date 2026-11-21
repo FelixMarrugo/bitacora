@@ -23,57 +23,71 @@
     </section>
 
     <form *ngIf="!isLoading && !notFound" class="grid gap-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-6 lg:grid-cols-3" (ngSubmit)="save()" novalidate>
-      <label class="grid gap-1.5 text-sm font-medium text-slate-700">
-        Fecha
-        <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="date" [(ngModel)]="entry.fecha" name="fecha" required>
-      </label>
-      <section class="grid gap-3 sm:col-span-2 lg:col-span-3" aria-label="Proveedor">
-        <div class="grid gap-1.5 text-sm font-medium text-slate-700">
-          <label for="supplier-search">Buscar proveedor por NIT o razón social</label>
+      <section class="grid gap-5 sm:col-span-2 sm:grid-cols-2 lg:col-span-3" aria-label="Fecha y hora">
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700">
+          Fecha
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="date" [(ngModel)]="entry.fecha" name="fecha" required>
+        </label>
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700">
+          Hora
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="time" [(ngModel)]="entry.hora" name="hora" required>
+        </label>
+      </section>
+      <section class="grid gap-5 sm:col-span-2 sm:grid-cols-2 lg:col-span-3" aria-label="Proveedor y orden de compra">
+        <div class="grid gap-3" aria-label="Proveedor">
+        <div class="relative grid gap-1.5 text-sm font-medium text-slate-700" (focusout)="closeSupplierDropdown()">
+          <label for="edit-supplier-search">Proveedor / razón social</label>
           <input
-            id="supplier-search"
+            id="edit-supplier-search"
             class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-normal text-slate-900 placeholder:text-slate-400 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            type="search"
+            type="text"
             [(ngModel)]="supplierSearch"
             name="supplierSearch"
-            placeholder="Buscar por NIT o razón social"
+            placeholder="Escriba para buscar y seleccionar un proveedor"
+            [attr.aria-invalid]="!entry.proveedor && supplierSearch ? 'true' : null"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="edit-supplier-options"
+            [attr.aria-expanded]="supplierDropdownOpen"
+            [attr.aria-activedescendant]="supplierDropdownOpen && activeSupplierIndex >= 0 ? 'edit-supplier-option-' + activeSupplierIndex : null"
+            (focus)="openSupplierDropdown()"
             (ngModelChange)="onSupplierSearch()"
+            (keydown)="onSupplierKeydown($event)"
           >
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <label class="grid content-start gap-1.5 text-sm font-medium text-slate-700" for="edit-supplier-nit">
-            NIT
-            <input
-              id="edit-supplier-nit"
-              class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-600"
-              type="text"
-              [value]="entry.proveedorNit || ''"
-              placeholder="Se completa al seleccionar el proveedor"
-              readonly
+          <div
+            *ngIf="supplierDropdownOpen"
+            id="edit-supplier-options"
+            class="absolute left-0 right-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+            role="listbox"
+            aria-label="Proveedores"
+          >
+            <div
+              *ngFor="let supplier of filteredSuppliers; let i = index"
+              [id]="'edit-supplier-option-' + i"
+              class="cursor-pointer px-3 py-2 text-sm text-slate-900 hover:bg-slate-50"
+              [class.bg-sky-50]="activeSupplierIndex === i"
+              [class.cursor-not-allowed]="!isSupplierSelectable(supplier)"
+              [class.opacity-50]="!isSupplierSelectable(supplier)"
+              role="option"
+              [attr.aria-selected]="activeSupplierIndex === i"
+              [attr.aria-disabled]="!isSupplierSelectable(supplier)"
+              tabindex="-1"
+              (mousedown)="$event.preventDefault()"
+              (click)="selectSupplier(supplier.razonSocial)"
             >
-          </label>
-          <div class="grid content-start gap-1.5 text-sm font-medium text-slate-700">
-            <label for="edit-supplier-name">Proveedor / razón social</label>
-            <select id="edit-supplier-name" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" [(ngModel)]="entry.proveedor" name="proveedor" (ngModelChange)="selectSupplier($event)" required>
-              <option value="">Seleccione un proveedor</option>
-              <option *ngFor="let supplier of filteredSuppliers" [value]="supplier.razonSocial" [disabled]="!supplier.activo && entry.proveedor !== supplier.razonSocial">
-                {{ supplier.nit ? supplier.nit + ' — ' : '' }}{{ supplier.razonSocial }}{{ supplier.activo ? '' : ' (inactivo)' }}
-              </option>
-            </select>
-            <span *ngIf="supplierSearch && filteredSuppliers.length === 0" class="text-xs font-normal text-amber-700">
+              {{ supplier.razonSocial }}{{ supplier.activo ? '' : ' (inactivo)' }}
+            </div>
+            <p *ngIf="filteredSuppliers.length === 0" class="px-3 py-2 text-sm font-normal text-slate-500" role="status">
               No hay proveedores que coincidan con la búsqueda.
-            </span>
+            </p>
           </div>
         </div>
+        </div>
+        <label class="grid content-start gap-1.5 text-sm font-medium text-slate-700">
+          Orden de compra
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="text" [(ngModel)]="entry.ordenCompra" name="ordenCompra">
+        </label>
       </section>
-      <label class="grid gap-1.5 text-sm font-medium text-slate-700">
-        Hora
-        <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="time" [(ngModel)]="entry.hora" name="hora" required>
-      </label>
-      <label class="grid gap-1.5 text-sm font-medium text-slate-700">
-        Orden de compra
-        <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="text" [(ngModel)]="entry.ordenCompra" name="ordenCompra">
-      </label>
 
       <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 lg:col-span-2">
         <input class="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-600" type="checkbox" [(ngModel)]="entry.yaIngresadoErp" name="yaIngresadoErp">

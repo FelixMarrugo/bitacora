@@ -25,6 +25,7 @@
           maxlength="100"
           autocomplete="given-name"
           required
+          [attr.aria-invalid]="errorMessage && !firstName.trim() ? 'true' : null"
         >
       </label>
       <label class="grid gap-1.5 text-sm font-medium text-slate-700">
@@ -36,32 +37,37 @@
           maxlength="100"
           autocomplete="family-name"
           required
+          [attr.aria-invalid]="errorMessage && !lastName.trim() ? 'true' : null"
         >
       </label>
-      <label class="grid gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
-        Usuario
-        <input
-          class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
-          [(ngModel)]="username"
-          name="username"
-          maxlength="100"
-          autocomplete="username"
-          required
-        >
-      </label>
-      <label class="grid gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
-        {{ isEditing ? 'Nueva contraseña (opcional)' : 'Contraseña' }}
-        <input
-          class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
-          [(ngModel)]="password"
-          name="password"
-          type="password"
-          [required]="!isEditing"
-          minlength="6"
-          autocomplete="new-password"
-        >
-        <span class="text-xs font-normal text-slate-500" *ngIf="isEditing">Déjala vacía si no deseas cambiarla.</span>
-      </label>
+      <section class="grid gap-5 sm:col-span-2 sm:grid-cols-2" aria-label="Usuario y contraseña">
+        <label class="grid content-start gap-1.5 text-sm font-medium text-slate-700">
+          Usuario
+          <input
+            class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            [(ngModel)]="username"
+            name="username"
+            maxlength="100"
+            autocomplete="username"
+            required
+            [attr.aria-invalid]="errorMessage && !username.trim() ? 'true' : null"
+          >
+        </label>
+        <label class="grid content-start gap-1.5 text-sm font-medium text-slate-700">
+          {{ isEditing ? 'Nueva contraseña (opcional)' : 'Contraseña' }}
+          <input
+            class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            [(ngModel)]="password"
+            name="password"
+            type="password"
+            [required]="!isEditing"
+            minlength="6"
+            autocomplete="new-password"
+            [attr.aria-invalid]="errorMessage && (!password || password.length < 6) ? 'true' : null"
+          >
+          <span class="text-xs font-normal text-slate-500" *ngIf="isEditing">Déjala vacía si no deseas cambiarla.</span>
+        </label>
+      </section>
 
       <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 sm:col-span-2">
         <input
@@ -73,7 +79,7 @@
         Cuenta activa
       </label>
 
-      <p *ngIf="errorMessage" class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 sm:col-span-2" role="alert">
+      <p *ngIf="errorMessage" class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 sm:col-span-2" role="alert" aria-live="assertive">
         {{ errorMessage }}
       </p>
 
