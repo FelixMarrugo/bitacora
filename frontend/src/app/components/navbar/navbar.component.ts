@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-navbar',
@@ -15,7 +16,8 @@ export class NavbarComponent {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly router: Router
+    private readonly router: Router,
+    readonly themeService: ThemeService
   ) {}
 
   get displayName(): string {
@@ -34,6 +36,10 @@ export class NavbarComponent {
   toggleHelp(): void {
     this.closeMenu();
     this.isHelpOpen = !this.isHelpOpen;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   closeHelp(): void {

@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular/lazy';
 import { NavigationEnd, Router } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { AuthService } from './services/auth.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -15,9 +16,11 @@ export class AppComponent {
   showNavbar = false;
 
   constructor(
+    themeService: ThemeService,
     private readonly authService: AuthService,
     private readonly router: Router
   ) {
+    themeService.initialize();
     this.updateNavbarVisibility();
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
