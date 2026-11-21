@@ -44,21 +44,6 @@
         </li>
         <li class="shrink-0 sm:me-2">
           <a
-            routerLink="/usuarios"
-            (click)="closeMenu()"
-            routerLinkActive="border-sky-800 bg-sky-700 font-semibold text-white hover:!border-sky-800 hover:!bg-sky-800 hover:!text-white"
-            [routerLinkActiveOptions]="{ exact: false }"
-            ariaCurrentWhenActive="page"
-            class="group inline-flex w-full items-center justify-start gap-2 rounded-lg border border-transparent px-4 py-3 hover:border-slate-200 hover:bg-slate-50 hover:text-sky-700 sm:w-auto sm:justify-center sm:rounded-t-lg sm:rounded-b-none sm:border-b-2 sm:px-4 sm:py-4 sm:hover:border-sky-600"
-          >
-            <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none">
-              <path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m14-5a3.5 3.5 0 0 1 2 3.17V20m-10-9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-7.5a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-            </svg>
-            Usuarios
-          </a>
-        </li>
-        <li class="shrink-0 sm:me-2">
-          <a
             routerLink="/catalogos"
             (click)="closeMenu()"
             routerLinkActive="border-sky-800 bg-sky-700 font-semibold text-white hover:!border-sky-800 hover:!bg-sky-800 hover:!text-white"
@@ -87,6 +72,23 @@
             Informes
           </a>
         </li>
+        <li class="shrink-0 sm:me-2">
+          <a
+            routerLink="/usuarios"
+            (click)="closeMenu()"
+            routerLinkActive="border-sky-800 bg-sky-700 font-semibold text-white hover:!border-sky-800 hover:!bg-sky-800 hover:!text-white"
+            [routerLinkActiveOptions]="{ exact: false }"
+            ariaCurrentWhenActive="page"
+            class="group inline-flex w-full items-center justify-start gap-2 rounded-lg border border-transparent px-4 py-3 hover:border-slate-200 hover:bg-slate-50 hover:text-sky-700 sm:w-auto sm:justify-center sm:rounded-t-lg sm:rounded-b-none sm:border-b-2 sm:px-4 sm:py-4 sm:hover:border-sky-600"
+          >
+            <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              <path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m14-5a3.5 3.5 0 0 1 2 3.17V20m-10-9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-7.5a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+            </svg>
+            Usuarios
+          </a>
+        </li>
+
+
 
       </ul>
     </ng-template>
