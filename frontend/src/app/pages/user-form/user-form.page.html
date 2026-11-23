@@ -24,6 +24,7 @@
           name="firstName"
           maxlength="100"
           autocomplete="given-name"
+          title="Nombre obligatorio; máximo 100 caracteres."
           required
           [attr.aria-invalid]="errorMessage && !firstName.trim() ? 'true' : null"
         >
@@ -36,6 +37,7 @@
           name="lastName"
           maxlength="100"
           autocomplete="family-name"
+          title="Apellido obligatorio; máximo 100 caracteres."
           required
           [attr.aria-invalid]="errorMessage && !lastName.trim() ? 'true' : null"
         >
@@ -49,6 +51,7 @@
             name="username"
             maxlength="100"
             autocomplete="username"
+            title="Nombre de usuario obligatorio; máximo 100 caracteres."
             required
             [attr.aria-invalid]="errorMessage && !username.trim() ? 'true' : null"
           >
@@ -63,6 +66,7 @@
             [required]="!isEditing"
             minlength="6"
             autocomplete="new-password"
+            [title]="isEditing ? 'Opcional al editar; si la cambias, debe tener mínimo 6 caracteres.' : 'Obligatoria al crear la cuenta; mínimo 6 caracteres.'"
             [attr.aria-invalid]="errorMessage && (!password || password.length < 6) ? 'true' : null"
           >
           <span class="text-xs font-normal text-slate-500" *ngIf="isEditing">Déjala vacía si no deseas cambiarla.</span>
@@ -75,6 +79,7 @@
           type="checkbox"
           [(ngModel)]="active"
           name="active"
+          title="Activa o desactiva el acceso de esta cuenta."
         >
         Cuenta activa
       </label>

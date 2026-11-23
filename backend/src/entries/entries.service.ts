@@ -15,7 +15,7 @@ export class EntriesService {
   async create(dto: CreateEntryDto) {
     const productos = dto.productos ? this.normalizeProducts(dto.productos) : undefined;
     const productNames = productos?.map((item) => item.producto);
-    const totalQuantity = productos?.reduce((total, item) => total + item.cantidad, 0);
+    const totalQuantity = productos ? this.calculateTotalQuantity(productos) : undefined;
     const entity = this.entryRepository.create({
       ...dto,
       ...(productos && {
@@ -65,7 +65,7 @@ export class EntriesService {
     Object.assign(entry, dto, productos ? {
       productos,
       producto: productos.map((item) => item.producto).join(', ').slice(0, 200),
-      cantidad: productos.reduce((total, item) => total + item.cantidad, 0)
+      cantidad: this.calculateTotalQuantity(productos)
     } : {}, {
       yaIngresadoErp: dto.yaIngresadoErp ?? entry.yaIngresadoErp
     });
@@ -88,6 +88,15 @@ export class EntriesService {
     }
 
     return normalized;
+  }
+
+  private calculateTotalQuantity(products: { cantidad: number }[]): number {
+    const total = Number(products.reduce((sum, item) => sum + item.cantidad, 0).toFixed(3));
+    if (total > 999999999.999) {
+      throw new BadRequestException('La cantidad total no puede superar 999999999.999.');
+    }
+
+    return total;
   }
 
   async remove(id: number) {

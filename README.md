@@ -13,7 +13,7 @@ Aplicación full-stack para registrar recepciones de mercancía, consultar órde
 - Tabla de entradas con filtro por rango de fechas y acceso al mes actual.
 - Catálogos administrables de proveedores (NIT y razón social) y productos, con alta, edición y activación/desactivación.
 - Búsqueda de proveedores por NIT o razón social al registrar y editar una entrada.
-- Registro de recepciones con un proveedor seleccionado y múltiples productos, cada uno con su propia cantidad.
+- Registro de recepciones con un proveedor seleccionado y múltiples productos, cada uno con cantidad positiva de hasta tres decimales.
 - Edición de entradas desde una página dedicada; al guardar, confirma el cambio y vuelve al dashboard.
 - Eliminación con confirmación antes de ejecutar la acción.
 - Datos de cada entrada: fecha, proveedor, productos y cantidades, hora, orden de compra, estado ERP y observaciones.

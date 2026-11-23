@@ -41,6 +41,7 @@
               class="min-w-0 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs text-slate-900 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
               type="date"
               [(ngModel)]="dateFrom"
+              title="Fecha inicial del rango que quieres consultar."
             >
           </label>
           <label class="grid gap-1 text-xs font-medium text-slate-600">
@@ -49,6 +50,7 @@
               class="min-w-0 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs text-slate-900 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
               type="date"
               [(ngModel)]="dateTo"
+              title="Fecha final del rango que quieres consultar; debe ser igual o posterior a Desde."
             >
           </label>
         </div>
@@ -104,6 +106,7 @@
               [(ngModel)]="entrySearch"
               placeholder="Buscar proveedor, producto u orden"
               aria-label="Buscar proveedor, producto u orden"
+              title="Escribe todo o parte del proveedor, producto o número de orden."
             >
           </label>
           <label class="grid gap-1 text-xs font-medium text-slate-600">
@@ -112,6 +115,7 @@
               class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
               [(ngModel)]="erpFilter"
               aria-label="Filtrar por estado ERP"
+              title="Muestra todas las entradas, solo las ingresadas al ERP o las pendientes."
             >
               <option value="all">Todos los estados</option>
               <option value="entered">Ingresados al ERP</option>

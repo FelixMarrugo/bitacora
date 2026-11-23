@@ -16,6 +16,7 @@
               type="date"
               [(ngModel)]="entry.fecha"
               name="fecha"
+              title="Fecha de recepción obligatoria."
               required
             >
           </label>
@@ -26,6 +27,7 @@
               type="time"
               [(ngModel)]="entry.hora"
               name="hora"
+              title="Hora de recepción obligatoria."
               required
             >
           </label>
@@ -41,6 +43,7 @@
               [(ngModel)]="supplierSearch"
               name="supplierSearch"
               placeholder="Escriba para buscar y seleccionar un proveedor"
+              title="Escriba una razón social y seleccione un proveedor activo del catálogo."
               [disabled]="isLoadingCatalogs || suppliers.length === 0"
               [attr.aria-invalid]="!entry.proveedor && supplierSearch ? 'true' : null"
               role="combobox"
@@ -91,7 +94,9 @@
               type="text"
               [(ngModel)]="entry.ordenCompra"
               name="ordenCompra"
+              maxlength="120"
               placeholder="Número de orden"
+              title="Número o referencia de la orden de compra; puede incluir letras y números, máximo 120 caracteres."
               (blur)="verifyOrder()"
             >
           </label>
@@ -117,13 +122,14 @@
             No hay productos activos. <a class="font-semibold underline" routerLink="/catalogos">Administra el catálogo</a> para continuar.
           </div>
 
-          <div *ngFor="let line of entry.productos; let i = index" class="grid grid-cols-2 items-end gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]">
+          <div *ngFor="let line of entry.productos; let i = index" class="grid grid-cols-2 items-start gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]">
             <label class="col-span-2 grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 sm:col-span-1">
               Producto
               <select
                 class="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
                 [(ngModel)]="line.producto"
                 [name]="'producto-' + i"
+                title="Seleccione un producto del catálogo. No se puede repetir en la misma entrada."
                 required
               >
                 <option value="">Seleccione un producto</option>
@@ -139,13 +145,16 @@
                 type="number"
                 [(ngModel)]="line.cantidad"
                 [name]="'cantidad-' + i"
-                min="1"
-                step="1"
+                min="0.001"
+                max="999999999.999"
+                step="0.001"
+                title="Cantidad entre 0.001 y 999999999.999; admite hasta 3 decimales. Ejemplo: 0,25 o 0.25, según la configuración regional."
                 required
               >
+              <span class="text-xs font-normal leading-4 text-slate-500">Mayor que 0; hasta 3 decimales. Ej.: 0,25 (o 0.25).</span>
             </label>
             <button
-              class="min-w-20 justify-self-end whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:justify-self-start"
+              class="min-w-20 justify-self-end whitespace-nowrap rounded-lg px-3 py-2.5 mt-7 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:justify-self-start"
               type="button"
               (click)="removeProductLine(i)"
               [attr.aria-label]="'Quitar producto ' + (i + 1)"
@@ -161,6 +170,7 @@
             type="checkbox"
             [(ngModel)]="entry.yaIngresadoErp"
             name="yaIngresadoErp"
+            title="Marque si la mercancía ya fue registrada en el ERP."
           >
           Ya ingresado al ERP
         </label>
@@ -173,6 +183,7 @@
             name="observaciones"
             rows="4"
             placeholder="Comentarios adicionales"
+            title="Observaciones opcionales sobre esta recepción."
           ></textarea>
         </label>
 

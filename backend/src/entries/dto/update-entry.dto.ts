@@ -4,11 +4,11 @@ import {
 	IsArray,
 	IsBoolean,
 	IsDateString,
-	IsInt,
 	IsNumber,
 	IsOptional,
 	IsPositive,
 	IsString,
+	Max,
 	MaxLength,
 	Matches,
 	MinLength,
@@ -21,8 +21,8 @@ class UpdateEntryProductDto {
 	@Matches(/\S/)
 	producto: string;
 
-	@IsNumber()
-	@IsInt()
+	@IsNumber({ maxDecimalPlaces: 3 })
+	@Max(999999999.999)
 	@IsPositive()
 	cantidad: number;
 }
@@ -46,7 +46,8 @@ export class UpdateEntryDto {
 	producto?: string;
 
 	@IsOptional()
-	@IsNumber()
+	@IsNumber({ maxDecimalPlaces: 3 })
+	@Max(999999999.999)
 	cantidad?: number;
 
 	@IsOptional()
@@ -62,6 +63,7 @@ export class UpdateEntryDto {
 
 	@IsOptional()
 	@IsString()
+	@MaxLength(120)
 	ordenCompra?: string;
 
 	@IsOptional()

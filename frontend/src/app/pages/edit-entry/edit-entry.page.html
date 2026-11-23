@@ -26,11 +26,11 @@
       <section class="grid gap-5 sm:col-span-2 sm:grid-cols-2 lg:col-span-3" aria-label="Fecha y hora">
         <label class="grid gap-1.5 text-sm font-medium text-slate-700">
           Fecha
-          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="date" [(ngModel)]="entry.fecha" name="fecha" required>
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="date" [(ngModel)]="entry.fecha" name="fecha" title="Fecha de recepción obligatoria." required>
         </label>
         <label class="grid gap-1.5 text-sm font-medium text-slate-700">
           Hora
-          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="time" [(ngModel)]="entry.hora" name="hora" required>
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="time" [(ngModel)]="entry.hora" name="hora" title="Hora de recepción obligatoria." required>
         </label>
       </section>
       <section class="grid gap-5 sm:col-span-2 sm:grid-cols-2 lg:col-span-3" aria-label="Proveedor y orden de compra">
@@ -44,6 +44,7 @@
             [(ngModel)]="supplierSearch"
             name="supplierSearch"
             placeholder="Escriba para buscar y seleccionar un proveedor"
+            title="Escriba una razón social y seleccione un proveedor activo del catálogo."
             [attr.aria-invalid]="!entry.proveedor && supplierSearch ? 'true' : null"
             role="combobox"
             aria-autocomplete="list"
@@ -85,12 +86,12 @@
         </div>
         <label class="grid content-start gap-1.5 text-sm font-medium text-slate-700">
           Orden de compra
-          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="text" [(ngModel)]="entry.ordenCompra" name="ordenCompra">
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="text" [(ngModel)]="entry.ordenCompra" name="ordenCompra" maxlength="120" title="Número o referencia de la orden de compra; puede incluir letras y números, máximo 120 caracteres.">
         </label>
       </section>
 
       <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 lg:col-span-2">
-        <input class="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-600" type="checkbox" [(ngModel)]="entry.yaIngresadoErp" name="yaIngresadoErp">
+        <input class="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-600" type="checkbox" [(ngModel)]="entry.yaIngresadoErp" name="yaIngresadoErp" title="Marque si la mercancía ya fue registrada en el ERP.">
         Ingresado al ERP
       </label>
       <button
@@ -111,10 +112,10 @@
             Agregar producto
           </button>
         </div>
-        <div *ngFor="let line of entry.productos; let i = index" class="grid grid-cols-2 items-end gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]">
+        <div *ngFor="let line of entry.productos; let i = index" class="grid grid-cols-2 items-start gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]">
           <label class="col-span-2 grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 sm:col-span-1">
             Producto
-            <select class="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" [(ngModel)]="line.producto" [name]="'producto-' + i" required>
+            <select class="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" [(ngModel)]="line.producto" [name]="'producto-' + i" title="Seleccione un producto del catálogo. No se puede repetir en la misma entrada." required>
               <option value="">Seleccione un producto</option>
               <option *ngFor="let product of products" [value]="product.nombre" [disabled]="isProductSelected(product.nombre, i) || (!product.activo && line.producto !== product.nombre)">
                 {{ product.nombre }}{{ product.activo ? '' : ' (inactivo)' }}
@@ -123,9 +124,10 @@
           </label>
           <label class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700">
             Cantidad
-            <input class="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="number" min="1" step="1" [(ngModel)]="line.cantidad" [name]="'cantidad-' + i" required>
+            <input class="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" type="number" min="0.001" max="999999999.999" step="0.001" [(ngModel)]="line.cantidad" [name]="'cantidad-' + i" title="Cantidad entre 0.001 y 999999999.999; admite hasta 3 decimales. Ejemplo: 0,25 o 0.25, según la configuración regional." required>
+            <span class="text-xs font-normal leading-4 text-slate-500">Mayor que 0; hasta 3 decimales. Ej.: 0,25 (o 0.25).</span>
           </label>
-          <button class="min-w-20 justify-self-end whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:justify-self-start" type="button" (click)="removeProductLine(i)" [attr.aria-label]="'Quitar producto ' + (i + 1)">
+          <button class="min-w-20 justify-self-end whitespace-nowrap rounded-lg px-3 py-2.5 mt-7 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:justify-self-start" type="button" (click)="removeProductLine(i)" [attr.aria-label]="'Quitar producto ' + (i + 1)">
             Quitar
           </button>
         </div>
@@ -136,7 +138,7 @@
 
       <label class="grid gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2 lg:col-span-3">
         Observaciones
-        <textarea class="min-h-28 resize-y rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" rows="4" [(ngModel)]="entry.observaciones" name="observaciones"></textarea>
+        <textarea class="min-h-28 resize-y rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100" rows="4" [(ngModel)]="entry.observaciones" name="observaciones" title="Observaciones opcionales sobre esta recepción."></textarea>
       </label>
 
       <p *ngIf="statusMessage" class="text-sm text-sky-700 sm:col-span-2 lg:col-span-3" role="status">{{ statusMessage }}</p>

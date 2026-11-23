@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { EntradaBitacora, EntradaProducto } from '../../models/entrada.model';
 import { ApiService } from '../../services/api.service';
+import { sumQuantities } from '../../utils/quantity';
 
 @Component({
   selector: 'app-dashboard',
@@ -76,8 +77,7 @@ export class DashboardPage implements OnInit {
   }
 
   totalQuantity(entry: EntradaBitacora): number {
-    return this.productLines(entry)
-      .reduce((total, item) => total + Number(item.cantidad), 0);
+    return sumQuantities(this.productLines(entry).map((item) => item.cantidad));
   }
 
   private getCurrentMonthRange(): { from: string; to: string } {

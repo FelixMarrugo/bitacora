@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { ApiService } from '../../services/api.service';
 import { CatalogoItem, EntradaBitacora, EntradaProducto, ProveedorCatalogoItem } from '../../models/entrada.model';
 import { filterSuppliersByName } from '../../utils/supplier-search';
+import { isValidQuantity } from '../../utils/quantity';
 
 @Component({
   selector: 'app-bitacora',
@@ -219,9 +220,7 @@ export class BitacoraPage implements OnInit {
       products.length === 0 ||
       products.some((item) =>
         !this.products.some((product) => product.nombre === item.producto) ||
-        !Number.isFinite(Number(item.cantidad)) ||
-        !Number.isInteger(Number(item.cantidad)) ||
-        Number(item.cantidad) <= 0
+        !isValidQuantity(item.cantidad)
       ) ||
       new Set(products.map((item) => item.producto.toLocaleLowerCase())).size !== products.length
     ) {

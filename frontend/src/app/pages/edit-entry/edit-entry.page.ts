@@ -12,6 +12,7 @@ import {
 } from '../../models/entrada.model';
 import { ApiService } from '../../services/api.service';
 import { filterSuppliersByName } from '../../utils/supplier-search';
+import { isValidQuantity } from '../../utils/quantity';
 
 @Component({
   selector: 'app-edit-entry',
@@ -271,9 +272,7 @@ export class EditEntryPage implements OnInit {
       products.length === 0 ||
       products.some((item) =>
         !item.producto.trim() ||
-        !Number.isFinite(Number(item.cantidad)) ||
-        !Number.isInteger(Number(item.cantidad)) ||
-        Number(item.cantidad) <= 0
+        !isValidQuantity(item.cantidad)
       ) ||
       new Set(products.map((item) => item.producto.toLocaleLowerCase())).size !== products.length
     ) {

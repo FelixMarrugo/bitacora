@@ -29,6 +29,7 @@
             [(ngModel)]="searchTerm"
             placeholder="Buscar por nombre o usuario"
             aria-label="Buscar por nombre o usuario"
+            title="Escribe todo o parte del nombre, apellido o usuario."
           >
         </label>
         <label class="grid grid-cols-[auto_minmax(9rem,1fr)] items-center gap-3 text-sm font-medium text-slate-600">
@@ -37,6 +38,7 @@
             class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-100"
             [(ngModel)]="statusFilter"
             aria-label="Filtrar usuarios por estado"
+            title="Muestra todos los usuarios, solo los activos o solo los inactivos."
           >
             <option value="all">Todos</option>
             <option value="active">Activos</option>
