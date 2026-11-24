@@ -247,5 +247,133 @@
         </div>
       </section>
     </div>
+
+    <section *ngIf="!isLoading" class="grid gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">Catálogos de inventario</h2>
+        <p class="mt-1 text-sm text-slate-500">Administra por separado los rollos y los insumos usados en cada conteo.</p>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section class="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">Rollos</h3>
+            <p class="mt-1 text-sm text-slate-500">El nombre y la medida identifican cada tipo de rollo.</p>
+          </div>
+          <form class="grid items-end gap-3 sm:grid-cols-[minmax(0,1.3fr)_7rem_minmax(11rem,1fr)_auto]" (ngSubmit)="addRoll()">
+            <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+              Nombre
+              <input class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="text" name="rollName" [(ngModel)]="rollName" maxlength="200" placeholder="Pan tostado (sal)" title="Nombre del rollo; máximo 200 caracteres." required>
+            </label>
+            <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+              Medida (cm)
+              <input class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="number" name="rollWidthCm" [(ngModel)]="rollWidthCm" min="1" max="999" step="1" placeholder="26" title="Medida entera entre 1 y 999 centímetros." required>
+            </label>
+            <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+              Categoría
+              <select class="min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" name="rollCategory" [(ngModel)]="rollCategory" required>
+                <option value="" disabled>Selecciona una categoría</option>
+                <option *ngFor="let category of rollCategories" [ngValue]="category">{{ category }}</option>
+              </select>
+            </label>
+            <button class="rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-800" type="submit">Agregar</button>
+          </form>
+
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[680px] text-left text-sm text-slate-600">
+              <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <tr><th class="px-3 py-3" scope="col">Rollo</th><th class="px-3 py-3" scope="col">Medida</th><th class="px-3 py-3" scope="col">Categoría</th><th class="px-3 py-3" scope="col">Estado</th><th class="px-3 py-3" scope="col">Acciones</th></tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngIf="rolls.length === 0"><td colspan="5" class="px-3 py-8 text-center text-slate-500">No hay rollos registrados.</td></tr>
+                <tr *ngFor="let item of rolls">
+                  <td class="px-3 py-3 font-medium text-slate-900">
+                    <ng-container *ngIf="editingRollId !== item.id; else editRollName">{{ item.nombre }}</ng-container>
+                    <ng-template #editRollName><input class="w-full rounded-lg border border-slate-300 px-2 py-1.5" [(ngModel)]="rollEditName" [name]="'roll-edit-name-' + item.id" maxlength="200" title="Nombre del rollo; máximo 200 caracteres."></ng-template>
+                  </td>
+                  <td class="px-3 py-3">
+                    <ng-container *ngIf="editingRollId !== item.id; else editRollWidth">{{ item.anchoCm }} cm</ng-container>
+                    <ng-template #editRollWidth><input class="w-24 rounded-lg border border-slate-300 px-2 py-1.5" type="number" [(ngModel)]="rollEditWidthCm" [name]="'roll-edit-width-' + item.id" min="1" max="999" step="1" title="Medida entera entre 1 y 999 centímetros."></ng-template>
+                  </td>
+                  <td class="px-3 py-3">
+                    <ng-container *ngIf="editingRollId !== item.id; else editRollCategory">{{ item.category }}</ng-container>
+                    <ng-template #editRollCategory>
+                      <select class="min-w-40 rounded-lg border border-slate-300 bg-white px-2 py-1.5" [(ngModel)]="rollEditCategory" [name]="'roll-edit-category-' + item.id" required>
+                        <option *ngFor="let category of rollCategories" [ngValue]="category">{{ category }}</option>
+                      </select>
+                    </ng-template>
+                  </td>
+                  <td class="px-3 py-3">{{ item.activo ? 'Activo' : 'Inactivo' }}</td>
+                  <td class="px-3 py-3">
+                    <div class="flex flex-wrap gap-2">
+                      <ng-container *ngIf="editingRollId === item.id; else rollActions">
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" (click)="saveRollEdit(item)">Guardar</button>
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-slate-600 hover:bg-slate-100" type="button" (click)="cancelRollEdit()">Cancelar</button>
+                      </ng-container>
+                      <ng-template #rollActions>
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-sky-700 hover:bg-sky-50" type="button" (click)="beginRollEdit(item)">Editar</button>
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-amber-700 hover:bg-amber-50" type="button" (click)="toggleRoll(item)">{{ item.activo ? 'Desactivar' : 'Activar' }}</button>
+                      </ng-template>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">Insumos</h3>
+            <p class="mt-1 text-sm text-slate-500">Define la unidad con la que se contará cada insumo.</p>
+          </div>
+          <form class="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_8rem_auto]" (ngSubmit)="addSupply()">
+            <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+              Nombre
+              <input class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="text" name="supplyName" [(ngModel)]="supplyName" maxlength="200" placeholder="Núcleos" title="Nombre del insumo; máximo 200 caracteres." required>
+            </label>
+            <label class="grid gap-1.5 text-xs font-medium text-slate-600">
+              Unidad
+              <input class="min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="text" name="supplyUnit" [(ngModel)]="supplyUnit" maxlength="30" placeholder="unidad" title="Unidad de conteo; máximo 30 caracteres." required>
+            </label>
+            <button class="rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-800" type="submit">Agregar</button>
+          </form>
+
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[500px] text-left text-sm text-slate-600">
+              <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <tr><th class="px-3 py-3" scope="col">Insumo</th><th class="px-3 py-3" scope="col">Unidad</th><th class="px-3 py-3" scope="col">Estado</th><th class="px-3 py-3" scope="col">Acciones</th></tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngIf="supplies.length === 0"><td colspan="4" class="px-3 py-8 text-center text-slate-500">No hay insumos registrados.</td></tr>
+                <tr *ngFor="let item of supplies">
+                  <td class="px-3 py-3 font-medium text-slate-900">
+                    <ng-container *ngIf="editingSupplyId !== item.id; else editSupplyName">{{ item.nombre }}</ng-container>
+                    <ng-template #editSupplyName><input class="w-full rounded-lg border border-slate-300 px-2 py-1.5" [(ngModel)]="supplyEditName" [name]="'supply-edit-name-' + item.id" maxlength="200" title="Nombre del insumo; máximo 200 caracteres."></ng-template>
+                  </td>
+                  <td class="px-3 py-3">
+                    <ng-container *ngIf="editingSupplyId !== item.id; else editSupplyUnit">{{ item.unidad }}</ng-container>
+                    <ng-template #editSupplyUnit><input class="w-24 rounded-lg border border-slate-300 px-2 py-1.5" [(ngModel)]="supplyEditUnit" [name]="'supply-edit-unit-' + item.id" maxlength="30" title="Unidad de conteo; máximo 30 caracteres."></ng-template>
+                  </td>
+                  <td class="px-3 py-3">{{ item.activo ? 'Activo' : 'Inactivo' }}</td>
+                  <td class="px-3 py-3">
+                    <div class="flex flex-wrap gap-2">
+                      <ng-container *ngIf="editingSupplyId === item.id; else supplyActions">
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" (click)="saveSupplyEdit(item)">Guardar</button>
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-slate-600 hover:bg-slate-100" type="button" (click)="cancelSupplyEdit()">Cancelar</button>
+                      </ng-container>
+                      <ng-template #supplyActions>
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-sky-700 hover:bg-sky-50" type="button" (click)="beginSupplyEdit(item)">Editar</button>
+                        <button class="rounded-lg px-2 py-1 text-sm font-semibold text-amber-700 hover:bg-amber-50" type="button" (click)="toggleSupply(item)">{{ item.activo ? 'Desactivar' : 'Activar' }}</button>
+                      </ng-template>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
   </main>
 </ion-content>

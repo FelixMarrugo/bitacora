@@ -1,0 +1,106 @@
+<ion-content>
+  <main class="mx-auto grid w-full max-w-5xl gap-6 p-4 sm:p-6 lg:p-8">
+    <header class="grid gap-2">
+      <a class="w-fit text-sm font-semibold text-sky-700 no-underline hover:underline" routerLink="/inventario">← Volver a inventarios</a>
+      <p class="text-sm font-semibold text-sky-700">Control de existencias</p>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ inventoryId ? 'Editar inventario' : 'Nuevo inventario' }}</h1>
+      <p class="text-sm text-slate-500">Cuenta varios pesos y cantidades para un mismo tipo de rollo; el total se calcula automáticamente.</p>
+    </header>
+
+    <section *ngIf="isLoading" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Cargando inventario y catálogos...</section>
+    <form *ngIf="!isLoading" class="grid gap-6" (ngSubmit)="submit()" novalidate>
+      <section class="grid gap-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-6">
+        <label class="grid gap-1.5 text-sm font-medium text-slate-700 sm:col-span-1">
+          Fecha del inventario
+          <input class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="date" name="fecha" [(ngModel)]="fecha" title="Fecha en la que se realiza el conteo." required>
+        </label>
+      </section>
+
+      <ng-container *ngFor="let category of rollCategories; let categoryIndex = index">
+        <section class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-sky-700">Sección {{ categoryIndex + 1 }} de {{ rollCategories.length }}</p>
+              <h2 class="mt-1 text-lg font-semibold text-slate-900">{{ category }}</h2>
+              <p class="mt-1 text-sm text-slate-500">Registra cada peso y cantidad de esta categoría.</p>
+            </div>
+            <button class="min-h-10 rounded-lg border border-sky-700 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50" type="button" (click)="addRollLine(category)" [disabled]="!hasActiveRolls(category)">Agregar fila</button>
+          </div>
+
+          <p *ngIf="!hasActiveRolls(category) && rollLinesFor(category).length === 0" class="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
+            No hay productos activos de esta categoría. <a class="font-semibold underline" routerLink="/catalogos">Administra Catálogos</a> para agregar o activar uno.
+          </p>
+          <div *ngIf="rollLinesFor(category).length === 0 && hasActiveRolls(category)" class="rounded-lg border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">
+            Sin filas en esta sección. Los productos no contados aparecerán con total cero en el reporte.
+          </div>
+          <div *ngFor="let line of rollLinesFor(category); let i = index" class="grid grid-cols-2 items-start gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1.5fr)_minmax(8rem,0.8fr)_minmax(7rem,0.6fr)_minmax(7rem,0.6fr)_auto]">
+            <label class="col-span-2 grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 sm:col-span-1">
+              Producto
+              <select class="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" [(ngModel)]="line.rollId" (ngModelChange)="onRollSelectionChange(line)" [name]="'roll-' + categoryIndex + '-' + i" title="Selecciona un producto de esta categoría." required>
+                <option *ngFor="let roll of rollOptionsFor(line, category)" [ngValue]="roll.id">{{ roll.nombre }} {{ roll.anchoCm }} cm{{ roll.activo ? '' : ' (inactivo)' }}</option>
+              </select>
+            </label>
+            <label class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700">
+              Peso (kg)
+              <input class="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="number" [(ngModel)]="line.weightKg" [name]="'weight-' + categoryIndex + '-' + i" min="0.001" max="999999999.999" step="0.001" title="Peso mayor que cero; admite hasta 3 decimales. Ejemplo: 15,7 o 15.7." required>
+            </label>
+            <label class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700">
+              Cantidad
+              <input class="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="number" [(ngModel)]="line.quantity" [name]="'roll-quantity-' + categoryIndex + '-' + i" min="1" step="1" title="Cantidad entera mayor que cero." required>
+            </label>
+            <div class="grid gap-1.5 text-sm">
+              <span class="font-medium text-slate-700">Subtotal</span>
+              <span class="rounded-lg bg-slate-50 px-3 py-2.5 font-semibold text-slate-900">{{ lineTotalKg(line) | number:'1.0-3' }} kg</span>
+            </div>
+            <button class="col-span-2 min-h-10 justify-self-end rounded-lg px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:col-span-1 sm:mt-7" type="button" (click)="removeRollLine(line)" [attr.aria-label]="'Quitar fila de ' + (line.rollName || 'rollo')">Quitar</button>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+            <span class="text-sm font-semibold text-slate-700">Total de {{ category }}</span>
+            <span class="text-xl font-bold text-sky-800">{{ totalRollKgFor(category) | number:'1.0-3' }} kg</span>
+          </div>
+        </section>
+      </ng-container>
+
+      <section class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-sky-200 bg-sky-50 p-5">
+        <span class="font-semibold text-slate-700">Total acumulado de las cuatro categorías</span>
+        <span class="text-xl font-bold text-sky-800">{{ totalRollKg | number:'1.0-3' }} kg</span>
+      </section>
+
+      <section class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">Insumos adicionales</h2>
+            <p class="mt-1 text-sm text-slate-500">Registra la cantidad según la unidad definida en el catálogo.</p>
+          </div>
+          <button class="min-h-10 rounded-lg border border-sky-700 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50" type="button" (click)="addSupplyLine()">Agregar insumo</button>
+        </div>
+        <p *ngIf="supplies.length === 0" class="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
+          No hay insumos en el catálogo. <a class="font-semibold underline" routerLink="/catalogos">Administra Catálogos</a> para agregar uno.
+        </p>
+        <div *ngIf="supplyLines.length === 0 && supplies.length > 0" class="rounded-lg border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">Puedes agregar insumos o guardar el inventario solo con rollos.</div>
+        <div *ngFor="let line of supplyLines; let i = index" class="grid grid-cols-2 items-start gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,0.6fr)_auto]">
+          <label class="col-span-2 grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 sm:col-span-1">
+            Insumo
+            <select class="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" [(ngModel)]="line.supplyId" [name]="'supply-' + i" title="Selecciona un insumo del catálogo." required>
+              <option *ngFor="let supply of supplyOptionsFor(line)" [ngValue]="supply.id">{{ supply.nombre }} ({{ supply.unidad }}){{ supply.activo ? '' : ' (inactivo)' }}</option>
+            </select>
+          </label>
+          <label class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700">
+            Cantidad
+            <input class="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm" type="number" [(ngModel)]="line.quantity" [name]="'supply-quantity-' + i" min="0.001" max="999999999.999" step="0.001" title="Cantidad mayor que cero; admite hasta 3 decimales." required>
+          </label>
+          <button class="col-span-2 min-h-10 justify-self-end rounded-lg px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 sm:col-span-1 sm:mt-7" type="button" (click)="removeSupplyLine(i)" [attr.aria-label]="'Quitar insumo ' + (i + 1)">Quitar</button>
+        </div>
+      </section>
+
+      <p *ngIf="statusMessage" class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert" aria-live="polite">{{ statusMessage }}</p>
+      <div class="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+        <a class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 no-underline hover:bg-slate-50" routerLink="/inventario">Cancelar</a>
+        <button class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-sky-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60" type="submit" [disabled]="isSubmitting">
+          <ion-spinner *ngIf="isSubmitting" name="crescent" class="h-4 w-4"></ion-spinner>
+          {{ isSubmitting ? 'Guardando...' : (inventoryId ? 'Guardar cambios' : 'Guardar inventario') }}
+        </button>
+      </div>
+    </form>
+  </main>
+</ion-content>

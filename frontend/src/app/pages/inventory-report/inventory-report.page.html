@@ -1,0 +1,99 @@
+<ion-content>
+  <main class="mx-auto grid w-full max-w-screen-xl gap-6 p-4 sm:p-6 lg:p-8">
+    <header class="grid gap-2">
+      <a class="w-fit text-sm font-semibold text-sky-700 no-underline hover:underline" routerLink="/inventario">← Volver a inventarios</a>
+      <p class="text-sm font-semibold text-sky-700">Control de existencias</p>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Reporte de inventario</h1>
+      <p class="text-sm text-slate-500">Detalle por rollo, cálculo de kilos y resumen de insumos.</p>
+    </header>
+
+    <section *ngIf="isLoading" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Generando reporte...</section>
+    <p *ngIf="statusMessage" class="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">{{ statusMessage }}</p>
+
+    <ng-container *ngIf="report as inventory">
+      <section class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-3">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Fecha del inventario</p>
+          <p class="mt-1 font-semibold text-slate-900">{{ inventory.fecha | date:'dd/MM/yyyy':'UTC' }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Realizado por</p>
+          <p class="mt-1 font-semibold text-slate-900">{{ inventory.createdByUsername }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total acumulado de rollos</p>
+          <p class="mt-1 text-xl font-bold text-sky-800">{{ inventory.totalRollKg | number:'1.0-3' }} kg</p>
+        </div>
+      </section>
+
+      <section class="grid gap-2">
+        <h2 class="text-lg font-semibold text-slate-900">Resultados por categoría</h2>
+        <p class="text-sm text-slate-500">Cada fila aporta peso × cantidad. Los rollos sin conteo se muestran con cero.</p>
+      </section>
+
+      <section *ngFor="let category of inventory.rollCategories" class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">{{ category.category }}</h3>
+            <p class="mt-1 text-sm text-slate-500">{{ category.rolls.length }} productos en esta categoría</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Subtotal categoría</p>
+            <p class="text-lg font-bold text-sky-800">{{ category.totalKg | number:'1.0-3' }} kg</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] text-left text-sm text-slate-600">
+            <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <tr><th class="px-3 py-3" scope="col">Producto</th><th class="px-3 py-3" scope="col">Cálculo de las filas</th><th class="px-3 py-3 text-right" scope="col">Total (kg)</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngIf="category.rolls.length === 0"><td colspan="3" class="px-3 py-8 text-center text-slate-500">No hay productos registrados en esta categoría.</td></tr>
+              <tr *ngFor="let roll of category.rolls">
+                <th class="px-3 py-3 text-left font-semibold text-slate-900" scope="row">{{ roll.nombre }} {{ roll.anchoCm }} cm</th>
+                <td class="px-3 py-3">
+                  <ng-container *ngIf="roll.details.length > 0; else noRollCount">
+                    <div *ngFor="let detail of roll.details" class="py-0.5">
+                      {{ detail.weightKg | number:'1.0-3' }} kg × {{ detail.quantity }} = {{ detail.totalKg | number:'1.0-3' }} kg
+                    </div>
+                  </ng-container>
+                  <ng-template #noRollCount><span class="text-slate-500">Sin conteo</span></ng-template>
+                </td>
+                <td class="px-3 py-3 text-right font-bold text-slate-900">{{ roll.totalKg | number:'1.0-3' }}</td>
+              </tr>
+            </tbody>
+            <tfoot class="border-t-2 border-slate-200 bg-slate-50">
+              <tr><th class="px-3 py-3 text-left font-bold text-slate-900" scope="row" colspan="2">Subtotal {{ category.category }}</th><td class="px-3 py-3 text-right font-bold text-slate-900">{{ category.totalKg | number:'1.0-3' }} kg</td></tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      <section class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Insumos contados</h2>
+          <p class="mt-1 text-sm text-slate-500">Las cantidades se agrupan por insumo y su unidad de catálogo.</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[420px] text-left text-sm text-slate-600">
+            <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <tr><th class="px-3 py-3" scope="col">Insumo</th><th class="px-3 py-3" scope="col">Unidad</th><th class="px-3 py-3 text-right" scope="col">Cantidad total</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngIf="supplyTotals.length === 0"><td colspan="3" class="px-3 py-8 text-center text-slate-500">Este inventario no contiene insumos adicionales.</td></tr>
+              <tr *ngFor="let supply of supplyTotals">
+                <th class="px-3 py-3 text-left font-semibold text-slate-900" scope="row">{{ supply.nombre }}</th>
+                <td class="px-3 py-3">{{ supply.unidad }}</td>
+                <td class="px-3 py-3 text-right font-semibold text-slate-900">{{ supply.cantidad | number:'1.0-3' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="flex flex-wrap justify-end gap-3">
+        <a class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 no-underline hover:bg-slate-50" [routerLink]="['/inventario/editar', inventory.id]">Editar inventario</a>
+      </div>
+    </ng-container>
+  </main>
+</ion-content>
