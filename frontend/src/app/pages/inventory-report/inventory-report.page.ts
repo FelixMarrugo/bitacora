@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular/lazy';
-import { LineaInsumoInventario, ReporteInventario } from '../../models/inventario.model';
+import { LineaInsumoInventario, ReporteInventario, ResumenRolloInventario } from '../../models/inventario.model';
 import { ApiService } from '../../services/api.service';
 
 interface ResumenInsumo {
@@ -22,6 +22,7 @@ export class InventoryReportPage implements OnInit {
   report: ReporteInventario | null = null;
   isLoading = true;
   statusMessage = '';
+  expandedRollIds = new Set<number>();
 
   constructor(
     private readonly apiService: ApiService,
@@ -54,6 +55,22 @@ export class InventoryReportPage implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  toggleRoll(rollId: number): void {
+    if (this.expandedRollIds.has(rollId)) {
+      this.expandedRollIds.delete(rollId);
+    } else {
+      this.expandedRollIds.add(rollId);
+    }
+  }
+
+  isRollExpanded(rollId: number): boolean {
+    return this.expandedRollIds.has(rollId);
+  }
+
+  totalQuantity(roll: ResumenRolloInventario): number {
+    return roll.details.reduce((sum, d) => sum + Number(d.quantity || 0), 0);
   }
 
   trackSupply(_: number, item: LineaInsumoInventario): number {

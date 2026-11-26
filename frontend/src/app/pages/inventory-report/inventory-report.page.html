@@ -28,7 +28,7 @@
 
       <section class="grid gap-2">
         <h2 class="text-lg font-semibold text-slate-900">Resultados por categoría</h2>
-        <p class="text-sm text-slate-500">Cada fila aporta peso × cantidad. Los rollos sin conteo se muestran con cero.</p>
+        <p class="text-sm text-slate-500">Haz clic en cualquier producto para desplegar el detalle de las entradas y el cálculo de la multiplicación.</p>
       </section>
 
       <section *ngFor="let category of inventory.rollCategories" class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -45,25 +45,78 @@
         <div class="overflow-x-auto">
           <table class="w-full min-w-[640px] text-left text-sm text-slate-600">
             <thead class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
-              <tr><th class="px-3 py-3" scope="col">Producto</th><th class="px-3 py-3" scope="col">Cálculo de las filas</th><th class="px-3 py-3 text-right" scope="col">Total (kg)</th></tr>
+              <tr>
+                <th class="px-3 py-3" scope="col">Producto</th>
+                <th class="px-3 py-3 text-right" scope="col">Cantidad de rollos</th>
+                <th class="px-3 py-3 text-right" scope="col">Total (kg)</th>
+                <th class="px-3 py-3 text-center" scope="col">Detalle</th>
+              </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr *ngIf="category.rolls.length === 0"><td colspan="3" class="px-3 py-8 text-center text-slate-500">No hay productos registrados en esta categoría.</td></tr>
-              <tr *ngFor="let roll of category.rolls">
-                <th class="px-3 py-3 text-left font-semibold text-slate-900" scope="row">{{ roll.nombre }} {{ roll.anchoCm }} cm</th>
-                <td class="px-3 py-3">
-                  <ng-container *ngIf="roll.details.length > 0; else noRollCount">
-                    <div *ngFor="let detail of roll.details" class="py-0.5">
-                      {{ detail.weightKg | number:'1.0-3' }} kg × {{ detail.quantity }} = {{ detail.totalKg | number:'1.0-3' }} kg
-                    </div>
-                  </ng-container>
-                  <ng-template #noRollCount><span class="text-slate-500">Sin conteo</span></ng-template>
-                </td>
-                <td class="px-3 py-3 text-right font-bold text-slate-900">{{ roll.totalKg | number:'1.0-3' }}</td>
+              <tr *ngIf="category.rolls.length === 0">
+                <td colspan="4" class="px-3 py-8 text-center text-slate-500">No hay productos registrados en esta categoría.</td>
               </tr>
+              <ng-container *ngFor="let roll of category.rolls; let rollIndex = index">
+                <!-- Fila principal del producto -->
+                <tr
+                  class="cursor-pointer transition-colors hover:bg-sky-50/70"
+                  [class.bg-slate-50/70]="rollIndex % 2 === 1"
+                  [class.bg-white]="rollIndex % 2 === 0"
+                  (click)="toggleRoll(roll.rollId)"
+                  [title]="'Haz clic para ' + (isRollExpanded(roll.rollId) ? 'ocultar' : 'ver') + ' el detalle de ' + roll.nombre"
+                >
+                  <th class="px-3 py-3.5 text-left font-semibold text-slate-900" scope="row">
+                    <div class="flex items-center gap-2">
+                      <span>{{ roll.nombre }} {{ roll.anchoCm }} cm</span>
+                      <span *ngIf="roll.details.length > 1" class="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800">
+                        {{ roll.details.length }} entradas
+                      </span>
+                    </div>
+                  </th>
+                  <td class="px-3 py-3.5 text-right font-medium text-slate-800">
+                    <ng-container *ngIf="roll.details.length > 0; else noRollCount">
+                      {{ totalQuantity(roll) }} {{ totalQuantity(roll) === 1 ? 'rollo' : 'rollos' }}
+                    </ng-container>
+                    <ng-template #noRollCount>
+                      <span class="text-slate-400 font-normal">Sin conteo</span>
+                    </ng-template>
+                  </td>
+                  <td class="px-3 py-3.5 text-right font-bold text-slate-900">
+                    {{ roll.totalKg | number:'1.0-3' }} kg
+                  </td>
+                  <td class="px-3 py-3.5 text-center">
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-100/80 transition-colors"
+                    >
+                      <span>{{ isRollExpanded(roll.rollId) ? 'Ocultar' : 'Ver detalle' }}</span>
+                      <span class="transition-transform duration-200" [class.rotate-180]="isRollExpanded(roll.rollId)">▼</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Rollo con dos o más entradas -->
+                <ng-container *ngIf="roll.details.length > 1">
+                  <tr *ngFor="let detail of roll.details; let detailIndex = index" [class.bg-slate-50]="rollIndex % 2 === 1" [class.bg-white]="rollIndex % 2 === 0">
+                    <th class="px-3 py-2 text-left font-semibold text-slate-900" scope="row">
+                      <span *ngIf="detailIndex === 0">{{ roll.nombre }} {{ roll.anchoCm }} cm</span>
+                    </th>
+                    <td class="px-3 py-2 text-right">{{ detail.weightKg | number:'1.0-3' }} kg</td>
+                    <td class="px-3 py-2 text-right">{{ detail.quantity }}</td>
+                    <td class="px-3 py-2 text-right font-medium text-slate-700">{{ detail.totalKg | number:'1.0-3' }}</td>
+                  </tr>
+                  <tr class="font-semibold border-t border-slate-200/80" [class.bg-slate-50]="rollIndex % 2 === 1" [class.bg-white]="rollIndex % 2 === 0">
+                    <td colspan="3" class="px-3 py-2 text-left font-bold text-slate-800">Total {{ roll.nombre }} {{ roll.anchoCm }} cm</td>
+                    <td class="px-3 py-2 text-right font-bold text-slate-900">{{ roll.totalKg | number:'1.0-3' }}</td>
+                  </tr>
+                </ng-container>
+              </ng-container>
             </tbody>
             <tfoot class="border-t-2 border-slate-200 bg-slate-50">
-              <tr><th class="px-3 py-3 text-left font-bold text-slate-900" scope="row" colspan="2">Subtotal {{ category.category }}</th><td class="px-3 py-3 text-right font-bold text-slate-900">{{ category.totalKg | number:'1.0-3' }} kg</td></tr>
+              <tr>
+                <th class="px-3 py-3 text-left font-bold text-slate-900" scope="row" colspan="3">Subtotal {{ category.category }}</th>
+                <td class="px-3 py-3 text-right font-bold text-slate-900">{{ category.totalKg | number:'1.0-3' }} kg</td>
+              </tr>
             </tfoot>
           </table>
         </div>
