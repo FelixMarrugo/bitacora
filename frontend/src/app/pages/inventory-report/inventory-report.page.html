@@ -60,10 +60,9 @@
                 <!-- Fila principal del producto -->
                 <tr
                   class="cursor-pointer transition-colors hover:bg-sky-50/70"
-                  [class.bg-slate-50/70]="rollIndex % 2 === 1"
+                  [class.bg-slate-50]="rollIndex % 2 === 1"
                   [class.bg-white]="rollIndex % 2 === 0"
                   (click)="toggleRoll(roll.rollId)"
-                  [title]="'Haz clic para ' + (isRollExpanded(roll.rollId) ? 'ocultar' : 'ver') + ' el detalle de ' + roll.nombre"
                 >
                   <th class="px-3 py-3.5 text-left font-semibold text-slate-900" scope="row">
                     <div class="flex items-center gap-2">
@@ -95,27 +94,58 @@
                   </td>
                 </tr>
 
-                <!-- Rollo con dos o más entradas -->
-                <ng-container *ngIf="roll.details.length > 1">
-                  <tr *ngFor="let detail of roll.details; let detailIndex = index" [class.bg-slate-50]="rollIndex % 2 === 1" [class.bg-white]="rollIndex % 2 === 0">
-                    <th class="px-3 py-2 text-left font-semibold text-slate-900" scope="row">
-                      <span *ngIf="detailIndex === 0">{{ roll.nombre }} {{ roll.anchoCm }} cm</span>
-                    </th>
-                    <td class="px-3 py-2 text-right">{{ detail.weightKg | number:'1.0-3' }} kg</td>
-                    <td class="px-3 py-2 text-right">{{ detail.quantity }}</td>
-                    <td class="px-3 py-2 text-right font-medium text-slate-700">{{ detail.totalKg | number:'1.0-3' }}</td>
-                  </tr>
-                  <tr class="font-semibold border-t border-slate-200/80" [class.bg-slate-50]="rollIndex % 2 === 1" [class.bg-white]="rollIndex % 2 === 0">
-                    <td colspan="3" class="px-3 py-2 text-left font-bold text-slate-800">Total {{ roll.nombre }} {{ roll.anchoCm }} cm</td>
-                    <td class="px-3 py-2 text-right font-bold text-slate-900">{{ roll.totalKg | number:'1.0-3' }}</td>
-                  </tr>
-                </ng-container>
+                <!-- Fila desplegable con el detalle y la multiplicación -->
+                <tr *ngIf="isRollExpanded(roll.rollId)" [class.bg-slate-50/70]="rollIndex % 2 === 1" [class.bg-white]="rollIndex % 2 === 0">
+                  <td colspan="4" class="px-4 py-3">
+                    <div class="rounded-lg border border-slate-200 bg-slate-50/90 p-4 shadow-sm">
+                      <div class="flex items-center justify-between border-b border-slate-200/80 pb-2 mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wide text-slate-700">
+                          Detalle de entradas y multiplicación — {{ roll.nombre }} {{ roll.anchoCm }} cm
+                        </span>
+                        <span class="text-xs text-slate-500 font-medium">
+                          {{ roll.details.length }} {{ roll.details.length === 1 ? 'entrada' : 'entradas' }}
+                        </span>
+                      </div>
+
+                      <div *ngIf="roll.details.length === 0" class="text-sm text-slate-500 italic py-1">
+                        Sin conteo registrado para este rollo.
+                      </div>
+
+                      <div *ngIf="roll.details.length > 0" class="grid gap-2">
+                        <div
+                          *ngFor="let detail of roll.details; let i = index"
+                          class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-white px-3.5 py-2.5 text-sm border border-slate-200/60 shadow-2xs"
+                        >
+                          <div class="flex items-center gap-2">
+                            <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-800">{{ i + 1 }}</span>
+                            <span class="text-slate-700 font-medium">Peso: <strong class="text-slate-900">{{ detail.weightKg | number:'1.0-3' }} kg</strong></span>
+                            <span class="text-slate-400 font-bold">×</span>
+                            <span class="text-slate-700 font-medium">Cantidad: <strong class="text-slate-900">{{ detail.quantity }} {{ detail.quantity === 1 ? 'rollo' : 'rollos' }}</strong></span>
+                          </div>
+                          <div class="flex items-center gap-2 text-right">
+                            <span class="text-xs text-slate-500">Cálculo: {{ detail.weightKg | number:'1.0-3' }} kg × {{ detail.quantity }} =</span>
+                            <span class="font-bold text-sky-900 text-base">{{ detail.totalKg | number:'1.0-3' }} kg</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div *ngIf="roll.details.length > 1" class="mt-3 flex flex-wrap items-center justify-between border-t border-slate-200/80 pt-2.5 text-xs sm:text-sm">
+                        <span class="font-semibold text-slate-700">
+                          Total rollos (sumatoria): <strong class="text-slate-900">{{ totalQuantity(roll) }} rollos</strong>
+                        </span>
+                        <span class="font-bold text-sky-900 text-sm">
+                          Total kilos (acumulado): {{ roll.totalKg | number:'1.0-3' }} kg
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
               </ng-container>
             </tbody>
             <tfoot class="border-t-2 border-slate-200 bg-slate-50">
               <tr>
-                <th class="px-3 py-3 text-left font-bold text-slate-900" scope="row" colspan="3">Subtotal {{ category.category }}</th>
-                <td class="px-3 py-3 text-right font-bold text-slate-900">{{ category.totalKg | number:'1.0-3' }} kg</td>
+                <th class="px-3 py-3 text-left font-bold text-slate-900" scope="row" colspan="2">Subtotal {{ category.category }}</th>
+                <td class="px-3 py-3 text-right font-bold text-slate-900" colspan="2">{{ category.totalKg | number:'1.0-3' }} kg</td>
               </tr>
             </tfoot>
           </table>

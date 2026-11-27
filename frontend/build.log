@@ -1,0 +1,56 @@
+[33m❯[39m Building...
+[32m✔[39m Building...
+Application bundle generation failed. [8.936 seconds]
+
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Opening tag "tr" not terminated.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/inventory-report/inventory-report.page.html:61:16:
+[37m      61 │                 [32m<tr[37m
+         ╵                 [32m~~~[0m
+
+  Error occurs in the template of component InventoryReportPage.
+
+    src/app/pages/inventory-report/inventory-report.page.ts:19:15:
+[37m      19 │   templateUrl: [32m'./inventory-report.page.html'[37m
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "tr". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/inventory-report/inventory-report.page.html:96:16:
+[37m      96 │                 [32m</tr>[37m
+         ╵                 [32m~~~~~[0m
+
+  Error occurs in the template of component InventoryReportPage.
+
+    src/app/pages/inventory-report/inventory-report.page.ts:19:15:
+[37m      19 │   templateUrl: [32m'./inventory-report.page.html'[37m
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Opening tag "tr" not terminated.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/inventory-report/inventory-report.page.html:99:16:
+[37m      99 │ ...          [32m<tr *ngIf="isRollExpanded(roll.rollId)" [class.bg-sla[37m...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component InventoryReportPage.
+
+    src/app/pages/inventory-report/inventory-report.page.ts:19:15:
+[37m      19 │   templateUrl: [32m'./inventory-report.page.html'[37m
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "tr". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/inventory-report/inventory-report.page.html:143:16:
+[37m      143 │                 [32m</tr>[37m
+          ╵                 [32m~~~~~[0m
+
+  Error occurs in the template of component InventoryReportPage.
+
+    src/app/pages/inventory-report/inventory-report.page.ts:19:15:
+[37m      19 │   templateUrl: [32m'./inventory-report.page.html'[37m
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
